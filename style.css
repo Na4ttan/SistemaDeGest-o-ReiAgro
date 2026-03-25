@@ -47,6 +47,11 @@ body {
   border-bottom: 1px solid rgba(229, 236, 232, 0.8);
 }
 
+.profile-mini:hover,
+.menu-btn:hover {
+  transform: scale(1.05);
+}
+
 .topbar-left {
   display: flex;
   align-items: center;
@@ -335,6 +340,11 @@ textarea.form-control {
   font-weight: 700;
   text-align: left;
   margin-bottom: 8px;
+}
+
+.nav-link:hover {
+  background: rgba(47, 111, 62, 0.08);
+  color: var(--primary);
 }
 
 .menu-nav .nav-link i {
