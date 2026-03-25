@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rei Agro - Frente de Caixa</title>
+  <title>Rei Agro - Consulta de Estoque</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -60,7 +60,7 @@
         </div>
 
         <div class="menu-nav nav flex-column nav-pills mt-4">
-          <a href="frente-caixa.html" class="nav-link active">
+          <a href="index.html" class="nav-link">
             <i class="bi bi-cart3"></i>
             <span>Frente de Caixa</span>
           </a>
@@ -70,7 +70,7 @@
             <span>Cadastro</span>
           </a>
 
-          <a href="consulta.html" class="nav-link">
+          <a href="consulta.html" class="nav-link active">
             <i class="bi bi-box-seam"></i>
             <span>Consulta de Estoque</span>
           </a>
@@ -84,79 +84,49 @@
     </div>
 
     <main class="main-content">
-      <section id="aba-caixa">
-        <div class="app-card">
-          <div class="section-head">
-            <h3>Nova venda</h3>
-            <span class="section-tag">Venda rápida</span>
+      <section id="aba-estoque">
+        <div class="hero-card">
+          <div>
+            <span class="hero-badge">Monitoramento</span>
+            <h2>Consulta de Estoque</h2>
+            <p>Verifique disponibilidade e alertas de reposição.</p>
           </div>
-
-          <div class="mb-3">
-            <label class="form-label">Cliente</label>
-            <select class="form-select">
-              <option selected>Selecione um cliente</option>
-              <option>João Silva</option>
-              <option>Maria Souza</option>
-              <option>Fazenda Esperança</option>
-            </select>
+          <div class="hero-icon">
+            <i class="bi bi-archive"></i>
           </div>
-
-          <div class="mb-3">
-            <label class="form-label">Produto</label>
-            <select class="form-select">
-              <option selected>Selecione um produto</option>
-              <option>Ração Premium 20kg</option>
-              <option>Milho Triturado</option>
-              <option>Suplemento Bovino</option>
-            </select>
-          </div>
-
-          <div class="row g-2">
-            <div class="col-6">
-              <label class="form-label">Quantidade</label>
-              <input type="number" class="form-control" value="1">
-            </div>
-            <div class="col-6">
-              <label class="form-label">Preço</label>
-              <input type="text" class="form-control" placeholder="R$ 0,00">
-            </div>
-          </div>
-
-          <button class="btn btn-rei w-100 mt-3">
-            <i class="bi bi-plus-circle me-2"></i>Adicionar item
-          </button>
         </div>
 
         <div class="app-card">
-          <div class="section-head">
-            <h3>Resumo da compra</h3>
-            <span class="section-tag">3 itens</span>
+          <div class="mb-3">
+            <label class="form-label">Buscar produto</label>
+            <input type="text" class="form-control" placeholder="Digite o nome do produto">
           </div>
+        </div>
 
-          <div class="sale-item">
+        <div class="app-card">
+          <div class="stock-row">
             <div>
               <strong>Ração Premium 20kg</strong>
-              <small>2 unidades</small>
+              <small>Categoria: Ração</small>
             </div>
-            <span>R$ 379,80</span>
+            <span class="status ok">35 un.</span>
           </div>
 
-          <div class="sale-item">
+          <div class="stock-row">
             <div>
               <strong>Milho Triturado</strong>
-              <small>1 unidade</small>
+              <small>Categoria: Alimento</small>
             </div>
-            <span>R$ 79,90</span>
+            <span class="status low">8 un.</span>
           </div>
 
-          <div class="total-sale">
-            <span>Total da venda</span>
-            <strong>R$ 459,70</strong>
+          <div class="stock-row">
+            <div>
+              <strong>Suplemento Bovino</strong>
+              <small>Categoria: Suplemento</small>
+            </div>
+            <span class="status zero">0 un.</span>
           </div>
-
-          <button class="btn btn-dark w-100 mt-3">
-            <i class="bi bi-check2-circle me-2"></i>Finalizar venda
-          </button>
         </div>
       </section>
     </main>
