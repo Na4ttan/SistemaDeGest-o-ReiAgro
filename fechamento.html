@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rei Agro - Frente de Caixa</title>
+  <title>Rei Agro - Fechamento de Caixa</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -61,7 +61,7 @@
         </div>
 
         <div class="menu-nav nav flex-column nav-pills mt-4">
-          <a href="frente-caixa.html" class="nav-link active">
+          <a href="index.html" class="nav-link">
             <i class="bi bi-cart3"></i>
             <span>Frente de Caixa</span>
           </a>
@@ -76,7 +76,7 @@
             <span>Consulta de Estoque</span>
           </a>
 
-          <a href="fechamento.html" class="nav-link">
+          <a href="fechamento.html" class="nav-link active">
             <i class="bi bi-cash-coin"></i>
             <span>Fechamento de Caixa</span>
           </a>
@@ -85,78 +85,47 @@
     </div>
 
     <main class="main-content">
-      <section id="aba-caixa">
-        <div class="app-card">
-          <div class="section-head">
-            <h3>Nova venda</h3>
-            <span class="section-tag">Venda rápida</span>
+      <section id="aba-fechamento">
+        <div class="hero-card">
+          <div>
+            <span class="hero-badge">Resumo diário</span>
+            <h2>Fechamento de Caixa</h2>
+            <p>Consolide vendas, recebimentos e observações do dia.</p>
           </div>
-
-          <div class="mb-3">
-            <label class="form-label">Cliente</label>
-            <select class="form-select">
-              <option selected>Selecione um cliente</option>
-              <option>João Silva</option>
-              <option>Maria Souza</option>
-              <option>Fazenda Esperança</option>
-            </select>
+          <div class="hero-icon">
+            <i class="bi bi-wallet2"></i>
           </div>
-
-          <div class="mb-3">
-            <label class="form-label">Produto</label>
-            <select class="form-select">
-              <option selected>Selecione um produto</option>
-              <option>Ração Premium 20kg</option>
-              <option>Milho Triturado</option>
-              <option>Suplemento Bovino</option>
-            </select>
-          </div>
-
-          <div class="row g-2">
-            <div class="col-6">
-              <label class="form-label">Quantidade</label>
-              <input type="number" class="form-control" value="1">
-            </div>
-            <div class="col-6">
-              <label class="form-label">Preço</label>
-              <input type="text" class="form-control" placeholder="R$ 0,00">
-            </div>
-          </div>
-
-          <button class="btn btn-rei w-100 mt-3">
-            <i class="bi bi-plus-circle me-2"></i>Adicionar item
-          </button>
         </div>
 
         <div class="app-card">
-          <div class="section-head">
-            <h3>Resumo da compra</h3>
-            <span class="section-tag">3 itens</span>
+          <div class="summary-row">
+            <span>Total vendido</span>
+            <strong>R$ 2.450,00</strong>
           </div>
-
-          <div class="sale-item">
-            <div>
-              <strong>Ração Premium 20kg</strong>
-              <small>2 unidades</small>
-            </div>
-            <span>R$ 379,80</span>
+          <div class="summary-row">
+            <span>Quantidade de vendas</span>
+            <strong>18</strong>
           </div>
-
-          <div class="sale-item">
-            <div>
-              <strong>Milho Triturado</strong>
-              <small>1 unidade</small>
-            </div>
-            <span>R$ 79,90</span>
+          <div class="summary-row">
+            <span>Recebido em PIX</span>
+            <strong>R$ 1.200,00</strong>
           </div>
-
-          <div class="total-sale">
-            <span>Total da venda</span>
-            <strong>R$ 459,70</strong>
+          <div class="summary-row">
+            <span>Recebido em dinheiro</span>
+            <strong>R$ 650,00</strong>
           </div>
+          <div class="summary-row">
+            <span>Recebido em cartão</span>
+            <strong>R$ 600,00</strong>
+          </div>
+        </div>
 
-          <button class="btn btn-dark w-100 mt-3">
-            <i class="bi bi-check2-circle me-2"></i>Finalizar venda
+        <div class="app-card">
+          <label class="form-label">Observações</label>
+          <textarea class="form-control" rows="4" placeholder="Digite observações do fechamento"></textarea>
+
+          <button class="btn btn-rei w-100 mt-3">
+            <i class="bi bi-cash-stack me-2"></i>Fechar caixa
           </button>
         </div>
       </section>
