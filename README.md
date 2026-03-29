@@ -32,5 +32,18 @@ Controle de Versão: Git e GitHub
 Frontend: HTML5, CSS3 e Jinja2 (template engine)
 
 📂 Estrutura do Banco de Dados
-O sistema utiliza noções de bancos de dados relacionais para organizar as informações da Rei Agro.
-(Dica: Se você já tiver o modelo, pode citar aqui: "As tabelas principais incluem: Produtos, Fornecedores e Vendas").
+Para atender aos requisitos de persistência e organização de dados, o sistema utiliza um banco de dados relacional com as seguintes tabelas principais, garantindo a integridade referencial do sistema da Rei Agro:
+
+Categoria: Organização dos produtos (ex: rações, medicamentos, acessórios).
+
+Fornecedor: Cadastro das empresas parceiras que fornecem os insumos.
+
+Produto: Gestão do estoque com vínculo à categoria e ao fornecedor.
+
+Cliente: Cadastro completo para controle de atendimento e histórico.
+
+Venda: Registro das transações realizadas na loja.
+
+Itens_venda: Tabela de relacionamento que detalha cada produto inserido em uma venda específica.
+
+O sistema permite a gestão completa (CRUD) de todas as entidades mencionadas, assegurando que o usuário possa cadastrar, visualizar, atualizar e remover registros conforme a necessidade do negócio
