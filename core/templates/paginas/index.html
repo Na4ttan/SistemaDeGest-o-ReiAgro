@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Frente de Caixa - Rei Agro{% endblock %}
+
+{% block content %}
+<section id="aba-caixa">
+  <div class="app-card">
+    <div class="section-head">
+      <h3>Nova venda</h3>
+      <span class="section-tag">Venda rápida</span>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Cliente</label>
+      <select class="form-select">
+        <option selected>Selecione um cliente</option>
+        <option>João Silva</option>
+        <option>Maria Souza</option>
+        <option>Fazenda Esperança</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Produto</label>
+      <select class="form-select">
+        <option selected>Selecione um produto</option>
+        <option>Ração Premium 20kg</option>
+        <option>Milho Triturado</option>
+        <option>Suplemento Bovino</option>
+      </select>
+    </div>
+
+    <div class="row g-2">
+      <div class="col-6">
+        <label class="form-label">Quantidade</label>
+        <input type="number" class="form-control" value="1">
+      </div>
+      <div class="col-6">
+        <label class="form-label">Preço</label>
+        <input type="text" class="form-control" placeholder="R$ 0,00">
+      </div>
+    </div>
+
+    <button class="btn btn-rei w-100 mt-3">
+      <i class="bi bi-plus-circle me-2"></i>Adicionar item
+    </button>
+  </div>
+
+  <div class="app-card">
+    <div class="section-head">
+      <h3>Resumo da compra</h3>
+      <span class="section-tag">3 itens</span>
+    </div>
+
+    <div class="sale-item">
+      <div>
+        <strong>Ração Premium 20kg</strong>
+        <small>2 unidades</small>
+      </div>
+      <span>R$ 379,80</span>
+    </div>
+
+    <div class="sale-item">
+      <div>
+        <strong>Milho Triturado</strong>
+        <small>1 unidade</small>
+      </div>
+      <span>R$ 79,90</span>
+    </div>
+
+    <div class="total-sale">
+      <span>Total da venda</span>
+      <strong>R$ 459,70</strong>
+    </div>
+
+    <button class="btn btn-dark w-100 mt-3">
+      <i class="bi bi-check2-circle me-2"></i>Finalizar venda
+    </button>
+  </div>
+</section>
+{% endblock %}

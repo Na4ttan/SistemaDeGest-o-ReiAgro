@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Fechamento de Caixa{% endblock %}
+
+{% block content %}
+<section id="aba-fechamento">
+    <div class="hero-card">
+        <div>
+            <span class="hero-badge">Resumo diário</span>
+            <h2>Fechamento de Caixa</h2>
+        </div>
+        <div class="hero-icon"><i class="bi bi-wallet2"></i></div>
+    </div>
+
+    <div class="app-card">
+    </div>
+
+    <div class="app-card">
+        <label class="form-label">Observações</label>
+        <textarea class="form-control" rows="4"></textarea>
+        <button class="btn btn-rei w-100 mt-3">Fechar caixa</button>
+    </div>
+</section>
+{% endblock %}

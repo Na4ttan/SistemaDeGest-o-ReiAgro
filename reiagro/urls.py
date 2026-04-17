@@ -19,6 +19,8 @@ from django.urls import path
 from core import views  # Importa suas views da pasta core
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', views.home, name='index'),  # O caminho vazio '' é a home
+    path('', views.index, name='home'),  # O nome 'home' é o que vai no href
+    path('cadastro/', views.cadastro, name='cadastro'),
+    path('consulta/', views.consulta, name='consulta'),
+    path('fechamento/', views.fechamento, name='fechamento'),
 ]
