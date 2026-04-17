@@ -8,14 +8,18 @@ def frente_caixa(request):
         # lógica para salvar a venda
         pass
     # Busca os dados reias para o HTML
-    clientes = Cliente.objects.all()
     produtos = Produto.objects.all()
 
+    # 2. BUSCA TODOS OS CLIENTES (A linha que estava faltando!)
+    clientes = Cliente.objects.all()
+
+    # 3. Coloca os clientes no dicionário de contexto
     context = {
-        'clientes': clientes,
         'produtos': produtos,
+        'clientes': clientes,
     }
-    return render(request, 'index.html', context)
+
+    return render(request, 'paginas/index.html', context)
 
 
 def index(request):

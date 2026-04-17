@@ -12,70 +12,164 @@
 
     <div class="mb-3">
       <label class="form-label">Cliente</label>
-      <select class="form-select">
-        <option selected>Selecione um cliente</option>
-        <option>João Silva</option>
-        <option>Maria Souza</option>
-        <option>Fazenda Esperança</option>
+      <select id="select-cliente" class="form-select">
+        <option value="" selected>Consumidor (Venda Geral)</option>
+        {% for cliente in clientes %}
+        <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
+        {% empty %}
+        <option disabled>Nenhum cliente cadastrado</option>
+        {% endfor %}
       </select>
     </div>
 
     <div class="mb-3">
       <label class="form-label">Produto</label>
-      <select class="form-select">
-        <option selected>Selecione um produto</option>
-        <option>Ração Premium 20kg</option>
-        <option>Milho Triturado</option>
-        <option>Suplemento Bovino</option>
+      <select id="select-produto" class="form-select">
+        <option value="" selected disabled>Selecione um produto</option>
+        {% for produto in produtos %}
+        <option value="{{ produto.nome_produto }}" data-preco="{{ produto.preco_venda }}">
+          {{ produto.nome_produto }}
+        </option>
+        {% endfor %}
       </select>
     </div>
 
-    <div class="row g-2">
-      <div class="col-6">
-        <label class="form-label">Quantidade</label>
-        <input type="number" class="form-control" value="1">
-      </div>
-      <div class="col-6">
-        <label class="form-label">Preço</label>
-        <input type="text" class="form-control" placeholder="R$ 0,00">
+    <div class="mb-3">
+      <label class="form-label">Preço Unitário</label>
+      <div class="input-group">
+        <span class="input-group-text">R$</span>
+        <input type="text" id="input-preco" class="form-control" placeholder="0,00" readonly
+          style="background-color: #f8f9fa;">
       </div>
     </div>
 
-    <button class="btn btn-rei w-100 mt-3">
+    <div class="row g-2">
+      <div class="col-12">
+        <label class="form-label">Quantidade</label>
+        <input type="number" id="input-quantidade" class="form-control" value="1" min="1">
+      </div>
+    </div>
+
+    <button type="button" onclick="adicionarItem()" class="btn btn-rei w-100 mt-3">
       <i class="bi bi-plus-circle me-2"></i>Adicionar item
     </button>
+
   </div>
 
   <div class="app-card">
     <div class="section-head">
       <h3>Resumo da compra</h3>
-      <span class="section-tag">3 itens</span>
+      <span id="contador-itens" class="section-tag">0 itens</span>
     </div>
 
-    <div class="sale-item">
-      <div>
-        <strong>Ração Premium 20kg</strong>
-        <small>2 unidades</small>
-      </div>
-      <span>R$ 379,80</span>
-    </div>
-
-    <div class="sale-item">
-      <div>
-        <strong>Milho Triturado</strong>
-        <small>1 unidade</small>
-      </div>
-      <span>R$ 79,90</span>
+    <div id="lista-itens-venda">
     </div>
 
     <div class="total-sale">
       <span>Total da venda</span>
-      <strong>R$ 459,70</strong>
+      <strong id="valor-total-exibicao">R$ 0,00</strong>
     </div>
 
-    <button class="btn btn-dark w-100 mt-3">
+    <button type="button" onclick="finalizarVenda()" class="btn btn-dark w-100 mt-3">
       <i class="bi bi-check2-circle me-2"></i>Finalizar venda
     </button>
   </div>
 </section>
+
+
+<!--
+<script>
+  // Array que armazenará os itens da venda atual
+  let itensVenda = [];
+
+  // 1. Monitorar a seleção do produto para preencher o preço automaticamente
+  document.getElementById('select-produto').addEventListener('change', function () {
+    // Captura a opção que foi clicada no momento
+    const optionSelecionada = this.options[this.selectedIndex];
+    // Obtém o preco_venda que veio do banco de dados (via atributo data-preco)
+    const preco = optionSelecionada.getAttribute('data-preco');
+    const inputPreco = document.getElementById('input-preco');
+
+    if (preco) {
+      const valorNumerico = parseFloat(preco);
+      // Formata para exibição em Real no input
+      inputPreco.value = valorNumerico.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      // Guarda o valor numérico puro para o JavaScript calcular depois
+      inputPreco.setAttribute('data-valor-puro', valorNumerico);
+    }
+  });
+
+  // 2. Função para adicionar o item ao resumo
+  function adicionarItem() {
+    const select = document.getElementById('select-produto');
+    const nomeProduto = select.value;
+    const precoPuro = document.getElementById('input-preco').getAttribute('data-valor-puro');
+    const quantidade = parseInt(document.getElementById('input-quantidade').value);
+
+    // Validação básica
+    if (!nomeProduto || !precoPuro) {
+      alert("Por favor, selecione um produto primeiro.");
+      return;
+    }
+
+    const preco = parseFloat(precoPuro);
+    const subtotal = preco * quantidade;
+
+    // Cria o objeto do item e adiciona à lista
+    itensVenda.push({
+      produto: nomeProduto,
+      quantidade: quantidade,
+      preco: preco,
+      subtotal: subtotal
+    });
+
+    // Atualiza a interface
+    atualizarInterfaceResumo();
+
+    // Limpa os campos para a próxima inserção
+    select.value = "";
+    document.getElementById('input-preco').value = "";
+    document.getElementById('input-quantidade').value = 1;
+  }
+
+  // 3. Atualiza o Resumo da Compra na tela
+  function atualizarInterfaceResumo() {
+    const listaItensArea = document.getElementById('lista-itens-venda');
+    const totalElemento = document.getElementById('valor-total-exibicao');
+    const contadorTag = document.getElementById('contador-itens');
+
+    let totalGeral = 0;
+    let htmlItens = '';
+
+    itensVenda.forEach((item) => {
+      totalGeral += item.subtotal;
+      htmlItens += `
+            <div class="sale-item">
+                <div>
+                    <strong>${item.produto}</strong>
+                    <small>${item.quantidade} unidade(s)</small>
+                </div>
+                <span>${item.subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+            </div>
+        `;
+    });
+
+    // Injeta os itens na div de destino
+    if (listaItensArea) {
+      listaItensArea.innerHTML = htmlItens;
+    }
+
+    // Atualiza o contador de itens (ex: 3 itens)
+    if (contadorTag) {
+      contadorTag.innerText = `${itensVenda.length} item(ns)`;
+    }
+
+    // Atualiza o valor total (ex: R$ 459,70)
+    if (totalElemento) {
+      totalElemento.innerText = totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+  }
+</script>
+-->
+
 {% endblock %}

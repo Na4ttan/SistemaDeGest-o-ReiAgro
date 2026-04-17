@@ -21,7 +21,7 @@ from django.shortcuts import render
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.index, name='home'),  # O nome 'home' é o que vai no href
+    path('', views.frente_caixa, name='home'),
     path('cadastro/', views.cadastro, name='cadastro'),
     path('consulta/', views.consulta, name='consulta'),
     path('fechamento/', views.fechamento, name='fechamento'),
