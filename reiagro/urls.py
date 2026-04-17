@@ -17,10 +17,28 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from core import views  # Importa suas views da pasta core
+from django.shortcuts import render
 
 urlpatterns = [
+    path('admin/', admin.site.urls),
     path('', views.index, name='home'),  # O nome 'home' é o que vai no href
     path('cadastro/', views.cadastro, name='cadastro'),
     path('consulta/', views.consulta, name='consulta'),
     path('fechamento/', views.fechamento, name='fechamento'),
 ]
+
+
+def index(request):
+    return render(request, 'paginas/index.html')
+
+
+def cadastro(request):
+    return render(request, 'paginas/cadastro.html')
+
+
+def consulta(request):
+    return render(request, 'paginas/consulta.html')
+
+
+def fechamento(request):
+    return render(request, 'paginas/fechamento.html')
