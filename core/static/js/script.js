@@ -66,6 +66,14 @@ document.addEventListener('DOMContentLoaded', function () {
     inputQuantidade.value = 1;
   };
 
+  window.removerItem = function (index) {
+    // Remove 1 elemento na posição 'index'
+    itensVenda.splice(index, 1);
+
+    // Chama a função que já existe para redesenhar a lista e o total
+    atualizarResumo();
+  };
+
   function atualizarResumo() {
     const lista = document.getElementById('lista-itens-venda');
     const totalExibicao = document.getElementById('valor-total-exibicao');
@@ -76,16 +84,21 @@ document.addEventListener('DOMContentLoaded', function () {
     let totalGeral = 0;
     lista.innerHTML = '';
 
-    itensVenda.forEach(item => {
+    itensVenda.forEach((item, index) => {
       totalGeral += item.subtotal;
       lista.innerHTML += `
-        <div class="sale-item">
-            <div>
-                <strong>${item.produto}</strong>
-                <small>${item.quantidade} un.</small>
-            </div>
-            <span>R$ ${item.subtotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-        </div>`;
+    <div class="sale-item d-flex justify-content-between align-items-center">
+        <div>
+            <strong>${item.produto}</strong>
+            <small class="d-block">${item.quantidade} un.</small>
+        </div>
+        <div class="d-flex align-items-center">
+            <span class="me-3">R$ ${item.subtotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+            <button type="button" onclick="removerItem(${index})" class="btn btn-sm btn-outline-danger border-0">
+                <i class="bi bi-x-circle"></i>
+            </button>
+        </div>
+    </div>`;
     });
 
     if (totalExibicao) totalExibicao.innerText = `R$ ${totalGeral.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
