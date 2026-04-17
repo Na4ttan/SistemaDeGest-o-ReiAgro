@@ -20,13 +20,23 @@ class Fornecedor(models.Model):
 
 
 class Produto(models.Model):
+
+    # Definindo as constantes para as opções
+    UNIDADES_CHOICES = [
+        ('KG', 'Quilograma'),
+        ('UN', 'Unidade'),
+        ('LT', 'Litro'),
+        ('MT', 'Metro'),
+        ('PA', 'Pacote'),
+    ]
     nome_produto = models.CharField(max_length=200)
     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
     fornecedor = models.ForeignKey(Fornecedor, on_delete=models.CASCADE)
     preco_custo = models.DecimalField(max_digits=10, decimal_places=2)
     preco_venda = models.DecimalField(max_digits=10, decimal_places=2)
     quantidade_estoque = models.DecimalField(max_digits=10, decimal_places=3)
-    unidade_medida = models.CharField(max_length=10)  # Ex: KG, UN, SACA
+    unidade_medida = models.CharField(
+        max_length=2, choices=UNIDADES_CHOICES, default='UN')  # Ex: KG, UN, SACA
 
     def __str__(self):
         return self.nome_produto
