@@ -1,3 +1,5 @@
+let itensVenda = [];
+
 document.addEventListener('DOMContentLoaded', function () {
 
   // --- FUNCIONALIDADE 1: MENU DE NAVEGAÇÃO ---
@@ -17,7 +19,6 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // --- FUNCIONALIDADE 2: PDV (VENDA) ---
-  let itensVenda = [];
   const selectProduto = document.getElementById('select-produto');
   const inputPreco = document.getElementById('input-preco');
   const inputQuantidade = document.getElementById('input-quantidade');
@@ -105,3 +106,40 @@ document.addEventListener('DOMContentLoaded', function () {
     if (contador) contador.innerText = `${itensVenda.length} item(ns)`;
   }
 });
+
+window.finalizarVenda = function () {
+  const formaPagamento = document.getElementById('select-pagamento').value;
+  const clienteSelect = document.getElementById('select-cliente');
+  const clienteNome = clienteSelect.options[clienteSelect.selectedIndex].text;
+
+  if (itensVenda.length === 0) {
+    alert("Adicione pelo menos um produto!");
+    return;
+  }
+
+  // Dados que vamos enviar
+  const dadosVenda = {
+    cliente: clienteNome,
+    forma_pagamento: formaPagamento,
+    itens: itensVenda
+  };
+
+  // Enviando para o Django
+  fetch('', { // O '' significa que envia para a mesma URL atual
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+    },
+    body: JSON.stringify(dadosVenda)
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'sucesso') {
+        alert("Venda realizada com sucesso!");
+        location.reload(); // Recarrega a página para limpar tudo
+      } else {
+        alert("Erro ao salvar: " + data.mensagem);
+      }
+    });
+};

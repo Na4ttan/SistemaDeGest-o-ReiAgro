@@ -55,9 +55,11 @@ class Cliente(models.Model):
 class Venda(models.Model):
     cliente = models.CharField(max_length=200, default='Consumidor')
     produto = models.CharField(max_length=200, default='Geral')
-    quantidade = models.IntegerField(default=1)
+    quantidade = models.DecimalField(
+        max_digits=10, decimal_places=3, default=1.000)
     preco = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     data_venda = models.DateTimeField(auto_now_add=True)
+    forma_de_pagamento = models.CharField(max_length=8, default="Dinheiro")
 
     def __calculo_total(self):
         return self.quantidade * self.preco
