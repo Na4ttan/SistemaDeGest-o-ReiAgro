@@ -1,5 +1,5 @@
 import json
-from django.http import JsonResponse
+from django.http import JsonResponse, request
 from django.shortcuts import render, redirect
 from .models import Cliente, Fornecedor, Produto, Categoria, Venda, ItensVenda
 # Create your views here.
@@ -48,8 +48,38 @@ def frente_caixa(request):
     return render(request, 'paginas/index.html', context)
 
 
+
 def index(request):
-    return render(request, 'paginas/index.html')
+    if request.method == 'POST':
+        # Verifica qual formulário foi enviado (tem 3 na mesma página). Uma forma simples é verificar a presença de um campo específico 
+        if 'cpf' in request.POST:
+            nome = request.POST.get('nome')
+            cpf = request.POST.get('cpf')
+            telefone = request.POST.get('telefone')
+            email = request.POST.get('email')
+
+            Cliente.objects.create(
+                nome=nome,
+                cpf=cpf,
+                telefone=telefone,
+                email=email
+                )
+                #podemos pedir uma mensagem de sucesso aqui dps
+                return redirect('cadastro')
+
+        elif 'nome_produto' in request.POST:
+            nome_produto = request.POST.get('nome_produto')
+            categoria = request.POST.get('categoria')
+            fornecedor = request.POST.get('fornecedor')
+            preco_custo = request.POST.get('preco_custo')
+            preco_venda = request.POST.get('preco_venda')
+            quantia = request.POST.get('quantia')
+            unidade_de_medida = request.POST.get('unidade_de_medida')
+            '''Produto.objects.create(
+                nome_produto=nome_produto
+                )'''
+            
+    #return render(request, 'paginas/index.html')
 
 
 def cadastro(request):
