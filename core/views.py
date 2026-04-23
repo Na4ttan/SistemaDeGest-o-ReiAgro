@@ -49,40 +49,64 @@ def frente_caixa(request):
 
 
 
-def index(request):
+def cadastro(request):
     if request.method == 'POST':
-        # Verifica qual formulário foi enviado (tem 3 na mesma página). Uma forma simples é verificar a presença de um campo específico 
+        # Verifica qual formulário foi enviado.
+        
+        #cadastro de cliente
         if 'cpf' in request.POST:
             nome = request.POST.get('nome')
             cpf = request.POST.get('cpf')
-            telefone = request.POST.get('telefone')
-            email = request.POST.get('email')
+            telefone = request.POST.get('telefone_cliente')
+            email = request.POST.get('email_cliente')
 
             Cliente.objects.create(
                 nome=nome,
                 cpf=cpf,
                 telefone=telefone,
                 email=email
-                )
-                #podemos pedir uma mensagem de sucesso aqui dps
-                return redirect('cadastro')
+            )
+            #podemos pedir uma mensagem de sucesso aqui dps
+            return redirect('cadastro')
 
+        #Cadastro de produto
         elif 'nome_produto' in request.POST:
             nome_produto = request.POST.get('nome_produto')
-            categoria = request.POST.get('categoria')
-            fornecedor = request.POST.get('fornecedor')
+            categoria = request.POST.get('id_categoria')
+            fornecedor = request.POST.get('id_fornecedor')
             preco_custo = request.POST.get('preco_custo')
             preco_venda = request.POST.get('preco_venda')
             quantia = request.POST.get('quantia')
-            unidade_de_medida = request.POST.get('unidade_de_medida')
-            '''Produto.objects.create(
-                nome_produto=nome_produto
-                )'''
+            unidade_medida = request.POST.get('unidade_medida')
+
+            Produto.objects.create(
+                nome_produto=nome_produto,
+                categoria=categoria,
+                fornecedor=fornecedor,
+                preco_custo=preco_custo,
+                preco_venda=preco_venda,
+                quantia=quantia,
+                unidade_medida=unidade_medida
+            )
+            #podemos pedir uma mensagem de sucesso aqui dps
+            return redirect('cadastro')
+
+        #cadastro de fornecedor
+        elif "nome_fantasia" in request.POST:
+            nome_fantasia = request.POST.get('nome_fantasia')
+            cnpj = request.POST.get('cnpj')
+            telefone = request.POST.get('telefone_forn')
+            email = request.POST.get('email_forn')
+
+            Fornecedor.objects.create(
+                nome_fantasia=nome_fantasia,
+                cnpj=cnpj,
+                telefone=telefone,
+                email=email
+            )
+            #podemos pedir uma mensagem de sucesso aqui dps
+            return redirect('cadastro')
             
-    #return render(request, 'paginas/index.html')
-
-
-def cadastro(request):
     return render(request, 'paginas/cadastro.html')
 
 

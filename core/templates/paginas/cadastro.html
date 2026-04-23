@@ -25,13 +25,13 @@
                 </div>
                 <div class="col-6">
                     <label for="telefone_cliente" class="form-label">Telefone</label>
-                    <input type="text" class="form-control" id="telefone_cliente" name="telefone">
+                    <input type="text" class="form-control" id="telefone_cliente" name="telefone_cliente">
                 </div>
             </div>
 
             <div class="mb-3">
                 <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" name="email">
+                <input type="email" class="form-control" id="email" name="email_cliente">
             </div>
 
             <button type="submit" class="btn btn-rei w-100">
@@ -67,6 +67,7 @@
                     <label for="id_fornecedor_prod" class="form-label">Fornecedor</label>
                     <select class="form-select" id="id_fornecedor_prod" name="id_fornecedor" required>
                         <option value="" selected disabled>Selecione...</option>
+                        <!--colocar os fornecedores do banco de dados aqui-->
                         <option value="1">My Pet Brasil</option>
                         <option value="7">Special Dog</option>
                     </select>
@@ -88,12 +89,12 @@
                     <input type="number" class="form-control" id="quantia" name="quantia" placeholder="1">
                 </div>
                 <div class="col-6">
-                    <label for="unidade_medida" class="form-label"> Forma de madida </label>
-                    <select id="unidade_medida" class="form-select">
+                    <label for="unidade_medida" class="form-label"> Forma de medida </label>
+                    <select id="unidade_medida" class="form-select" name="unidade_medida">
                         <option value="KG" selected>Quilograma</option>
                         <option value="unidade">Unidade</option>
                         <option value="litro">Litro</option>
-                        <option value="metro">metro</option>
+                        <option value="metro">Metro</option>
                         <option value="pacote">Pacote</option>
                     </select>
             </div>
@@ -125,7 +126,7 @@
             <div class="row g-2 mb-3">
                 <div class="col-6">
                     <label for="telefone_forn" class="form-label">Telefone</label>
-                    <input type="text" class="form-control" id="telefone_forn" name="telefone">
+                    <input type="text" class="form-control" id="telefone_forn" name="telefone_forn">
                 </div>
                 <div class="col-6">
                     <label for="email_forn" class="form-label">E-mail</label>
