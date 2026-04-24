@@ -15,7 +15,7 @@ def frente_caixa(request):
 
             # Para cada item na lista do JS, criamos uma Venda no banco
             for item in itens:
-                produto_obj = Produto.objects.get(nome_produto=item['produto'])
+                produto_obj = Produto.objects.get(id=item['id'])
                 Venda.objects.create(
                     cliente=cliente_nome,
                     produto=item['produto'],

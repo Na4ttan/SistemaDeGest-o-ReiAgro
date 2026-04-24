@@ -25,14 +25,15 @@
 
     <div class="mb-3">
       <label class="form-label">Produto</label>
-      <select id="select-produto" class="form-select">
-        <option value="" selected disabled>Selecione um produto</option>
+      <select class="form-select" id="select-produto">
+        <option value="" selected disabled>Selecione o produto...</option>
         {% for produto in produtos %}
-        <option value="{{ produto.nome_produto }}" data-preco="{{ produto.preco_venda }}">
-          {{ produto.nome_produto }}
-        </option>
+            <option value="{{ produto.id }}" data-nome={{ produto.nome_produto }} data-preco="{{ produto.preco_venda }}">
+                {{ produto.nome_produto }}  
+                {% if produto.data_validade %}(Venc: {{ produto.data_validade|date:"d/m/Y" }}){% endif %}
+            </option>
         {% endfor %}
-      </select>
+    </select>
     </div>
 
     <div class="mb-3">

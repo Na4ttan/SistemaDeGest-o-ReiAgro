@@ -41,19 +41,22 @@ document.addEventListener('DOMContentLoaded', function () {
   window.adicionarItem = function () {
     if (!selectProduto || !inputPreco) return;
 
-    const clienteSelecionado = document.getElementById('select-cliente').value;
-
-    const nome = selectProduto.value;
+    // Pega o ID (value) e o Nome formatado (text)
+    const produtoId = selectProduto.value; 
+    const nomeExibicao = selectProduto.options[selectProduto.selectedIndex].text;
+    
     const precoPuro = inputPreco.getAttribute('data-valor-puro');
     const qtd = parseInt(inputQuantidade.value);
 
-    if (!nome || !precoPuro) {
+    if (!produtoId || !precoPuro) {
       alert("Por favor, selecione um produto primeiro!");
       return;
     }
 
+    // Guarda o ID para o Django e o Nome para o HTML
     itensVenda.push({
-      produto: nome,
+      id: produtoId,
+      produto: nomeExibicao,
       quantidade: qtd,
       preco: parseFloat(precoPuro),
       subtotal: parseFloat(precoPuro) * qtd
@@ -61,7 +64,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     atualizarResumo();
 
-    // Limpa campos
     selectProduto.value = "";
     inputPreco.value = "";
     inputQuantidade.value = 1;
