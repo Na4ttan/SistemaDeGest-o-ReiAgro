@@ -10,7 +10,7 @@ class Categoria(models.Model):
 
 
 class Fornecedor(models.Model):
-    nome_fantasia = models.CharField(max_length=200)
+    nome_fantasia = models.CharField(max_length=30)
     cnpj = models.CharField(max_length=18, unique=True)
     telefone = models.CharField(max_length=15)
     email = models.EmailField()

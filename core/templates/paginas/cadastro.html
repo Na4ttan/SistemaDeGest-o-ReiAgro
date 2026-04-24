@@ -58,19 +58,25 @@
                     <label for="id_categoria" class="form-label">Categoria</label>
                     <select class="form-select" id="id_categoria" name="id_categoria" required>
                         <option value="" selected disabled>Selecione...</option>
-                        <option value="1">Nutrição Animal</option>
-                        <option value="2">Jardinagem e Agro</option>
-                        <option value="6">Outros</option>
+                        
+                        {% for categoria in categorias %}
+                            <option value="{{categoria.id }}">{{ categoria.nome_categoria }}</option>
+                        {% empty %}
+                            <option disabled>Nenhuma categoria cadastrada</option>
+                        {% endfor %}
+
                     </select>
                 </div>
+
                 <div class="col-6">
                     <label for="id_fornecedor_prod" class="form-label">Fornecedor</label>
                     <select class="form-select" id="id_fornecedor_prod" name="id_fornecedor" required>
                         <option value="" selected disabled>Selecione...</option>
-                        <!--colocar os fornecedores do banco de dados aqui-->
-                        <option value="1">My Pet Brasil</option>
-                        <option value="7">Special Dog</option>
-                    </select>
+                        {% for fornecedor in fornecedores %}
+                            <option value="{{ fornecedor.id }}">{{ fornecedor.nome_fantasia }}</option>
+                        {% empty %}
+                            <option disabled>Nenhum fornecedor cadastrado</option>
+                        {% endfor %} </select>
                 </div>
             </div>
 

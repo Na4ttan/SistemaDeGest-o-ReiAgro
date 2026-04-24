@@ -74,20 +74,29 @@ def cadastro(request):
             nome_produto = request.POST.get('nome_produto')
             categoria = request.POST.get('id_categoria')
             fornecedor = request.POST.get('id_fornecedor')
-            preco_custo = request.POST.get('preco_custo')
-            preco_venda = request.POST.get('preco_venda')
+            preco_custo = request.POST.get('preco_custo').replace(',', '.')
+            preco_venda = request.POST.get('preco_venda').replace(',', '.')
             quantia = request.POST.get('quantia')
             unidade_medida = request.POST.get('unidade_medida')
 
+            id_cat = request.POST.get('id_categoria')
+            id_forn = request.POST.get('id_fornecedor')
+
+            #busca instâncias reais
+            categoria_instancia = Categoria.objects.get(id=id_cat)
+            fornecedor_instancia = Fornecedor.objects.get(id=id_forn)
+
+            #salvando as instâncias
             Produto.objects.create(
                 nome_produto=nome_produto,
-                categoria=categoria,
-                fornecedor=fornecedor,
+                categoria=categoria_instancia,
+                fornecedor=fornecedor_instancia,
                 preco_custo=preco_custo,
                 preco_venda=preco_venda,
-                quantia=quantia,
+                quantidade_estoque=quantia,
                 unidade_medida=unidade_medida
-            )
+                )
+            
             #podemos pedir uma mensagem de sucesso aqui dps
             return redirect('cadastro')
 
@@ -106,8 +115,16 @@ def cadastro(request):
             )
             #podemos pedir uma mensagem de sucesso aqui dps
             return redirect('cadastro')
+    #busca os dados reais para preencher os selects do formulário
+    fornecedores = Fornecedor.objects.all()
+    categorias = Categoria.objects.all()
+
+    context = {
+    'fornecedores':fornecedores,
+    'categorias': categorias,
+    }
             
-    return render(request, 'paginas/cadastro.html')
+    return render(request, 'paginas/cadastro.html', context)
 
 
 def consulta(request):
