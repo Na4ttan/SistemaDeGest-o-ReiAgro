@@ -36,7 +36,8 @@ class Produto(models.Model):
     preco_venda = models.DecimalField(max_digits=10, decimal_places=2)
     quantidade_estoque = models.DecimalField(max_digits=10, decimal_places=3)
     unidade_medida = models.CharField(
-        max_length=2, choices=UNIDADES_CHOICES, default='UN')  # Ex: KG, UN, SACA
+        max_length=2, choices=UNIDADES_CHOICES, default='UN')
+    data_validade = models.DateField(blank=True, null=True, verbose_name="Data de Validade")
 
     def __str__(self):
         return self.nome_produto

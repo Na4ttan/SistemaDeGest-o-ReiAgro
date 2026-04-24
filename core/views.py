@@ -34,7 +34,7 @@ def frente_caixa(request):
         except Exception as e:
             return JsonResponse({'status': 'erro', 'mensagem': str(e)}, status=400)
     # Busca os dados reias para o HTML
-    produtos = Produto.objects.all()
+    produtos = Produto.objects.all().order_by('data_validade', 'nome_produto')
 
     # 2. BUSCA TODOS OS CLIENTES (A linha que estava faltando!)
     clientes = Cliente.objects.all()
@@ -78,9 +78,12 @@ def cadastro(request):
             preco_venda = request.POST.get('preco_venda').replace(',', '.')
             quantia = request.POST.get('quantia')
             unidade_medida = request.POST.get('unidade_medida')
+            data_val = request.POST.get('data_validade')
 
             id_cat = request.POST.get('id_categoria')
             id_forn = request.POST.get('id_fornecedor')
+            if not data_val:
+                data_val = None
 
             #busca instâncias reais
             categoria_instancia = Categoria.objects.get(id=id_cat)
@@ -94,7 +97,8 @@ def cadastro(request):
                 preco_custo=preco_custo,
                 preco_venda=preco_venda,
                 quantidade_estoque=quantia,
-                unidade_medida=unidade_medida
+                unidade_medida=unidade_medida,
+                data_validade=data_val
                 )
             
             #podemos pedir uma mensagem de sucesso aqui dps
