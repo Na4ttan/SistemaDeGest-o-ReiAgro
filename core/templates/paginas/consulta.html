@@ -4,20 +4,145 @@
 
 {% block content %}
 <section id="aba-estoque">
-    <div class="hero-card">
-        <div>
-            <span class="hero-badge">Monitoramento</span>
-            <h2>Consulta de Estoque</h2>
-            <p>Verifique disponibilidade e alertas de reposição.</p>
+    <div class="app-card">
+        <div class="section-head">
+            <h3>Validade: Nutrição Animal</h3>
+            <span class="section-tag">Status Geral</span>
         </div>
-        <div class="hero-icon"><i class="bi bi-archive"></i></div>
+        <div style="max-height: 300px; display: flex; justify-content: center;">
+            <canvas id="graficoValidade"></canvas>
+        </div>
     </div>
 
-    <div class="app-card">
-        <input type="text" class="form-control" placeholder="Digite o nome do produto">
+    <div class="app-card mt-3">
+        <div class="section-head">
+            <h3>Consultar Estoque</h3>
+            <p class="text-muted small">Filtre por categoria, unidade ou atributo.</p>
+        </div>
+        <form method="GET" action="{% url 'consulta' %}" class="row g-2">
+            <div class="col-6">
+                <label class="form-label small text-muted">Categoria</label>
+                <select name="categoria" class="form-select">
+                    <option value="">Todas</option>
+                    {% for cat in categorias %}
+                        <option value="{{ cat.id }}" {% if request.GET.categoria == cat.id|stringformat:"i" %}selected{% endif %}>
+                            {{ cat.nome_categoria }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-6">
+                <label class="form-label small text-muted">Unidade</label>
+                <select name="unidade_medida" class="form-select">
+                    <option value="">Todas</option>
+                    <option value="KG" {% if request.GET.unidade_medida == "KG" %}selected{% endif %}>Quilograma</option>
+                    <option value="UN" {% if request.GET.unidade_medida == "UN" %}selected{% endif %}>Unidade</option>
+                    <option value="LT" {% if request.GET.unidade_medida == "LT" %}selected{% endif %}>Litro</option>
+                    <option value="MT" {% if request.GET.unidade_medida == "MT" %}selected{% endif %}>Metro</option>
+                    <option value="PA" {% if request.GET.unidade_medida == "PA" %}selected{% endif %}>Pacote</option>
+                </select>
+            </div>
+
+            <div class="col-5">
+                <label class="form-label small text-muted">Buscar por</label>
+                <select name="tipo_filtro" class="form-select">
+                    <option value="nome_produto" {% if request.GET.tipo_filtro == "nome_produto" %}selected{% endif %}>Nome</option>
+                    <option value="id" {% if request.GET.tipo_filtro == "id" %}selected{% endif %}>ID</option>
+                    <option value="preco_venda" {% if request.GET.tipo_filtro == "preco_venda" %}selected{% endif %}>Preço Min.</option>
+                </select>
+            </div>
+
+            <div class="col-7">
+                <label class="form-label small text-muted">Termo</label>
+                <input type="text" name="valor_busca" class="form-control" placeholder="Pesquisar..." value="{{ request.GET.valor_busca }}">
+            </div>
+
+            <div class="col-12 mt-3">
+                <button type="submit" class="btn btn-rei w-100">
+                    <i class="bi bi-search me-2"></i> Consultar Estoque
+                </button>
+            </div>
+        </form>
     </div>
 
-    <div class="app-card">
-    </div>
+    {% if consulta_feita %}
+        <div class="app-card mt-3">
+            <div class="section-head">
+                <h3>Resultados da Busca</h3>
+                <span class="section-tag">{{ produtos_lista|length }} encontrados</span>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr class="small text-muted">
+                            <th>ID</th>
+                            <th>Produto</th>
+                            <th>Preço</th>
+                            <th>Estoque</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prod in produtos_lista %}
+                        <tr>
+                            <td><small>#{{ prod.id }}</small></td>
+                            <td>
+                                <strong>{{ prod.nome_produto }}</strong><br>
+                                <small class="text-muted">{{ prod.categoria.nome_categoria }}</small>
+                            </td>
+                            <td>R$ {{ prod.preco_venda }}</td>
+                            <td>
+                                <span class="status {% if prod.quantidade_estoque <= 0 %}zero{% elif prod.quantidade_estoque < 10 %}low{% else %}ok{% endif %}">
+                                    {{ prod.quantidade_estoque }} {{ prod.unidade_medida }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">Nenhum produto encontrado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-4 text-muted">
+            <i class="bi bi-info-circle me-1"></i> Use os filtros acima para consultar o estoque.
+        </div>
+    {% endif %}
 </section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('graficoValidade').getContext('2d');
+        const data = {
+            labels: ['Vencidos', 'Até 30 dias', '1 a 2 meses', '2 a 3 meses', 'Mais de 3 meses'],
+            datasets: [{
+                data: [
+                    {{ dados_grafico.vencidos }},
+                    {{ dados_grafico.critico }},
+                    {{ dados_grafico.alerta }},
+                    {{ dados_grafico.atencao }},
+                    {{ dados_grafico.seguro }}
+                ],
+                backgroundColor: ['#dc3545', '#FF4500', '#fd7e14', '#ffc107', '#2f6f3e'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        };
+        new Chart(ctx, {
+            type: 'pie',
+            data: data,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 12 }, usePointStyle: true, padding: 20 } }
+                }
+            }
+        });
+    });
+</script>
 {% endblock %}

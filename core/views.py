@@ -155,7 +155,76 @@ def cadastro(request):
 
 
 def consulta(request):
-    return render(request, 'paginas/consulta.html')
+    hoje = timezone.now().date()
+    # Filtra produtos da categoria específica
+    # Certifique-se de que o nome no banco seja exatamente este
+    produtos = Produto.objects.filter(categoria__nome_categoria__icontains='Nutrição Animal')
+
+    #inicializa inicializa os contadores
+    dados_grafico = {
+        'vencidos': 0,      # Vermelho
+        'critico': 0,       # laranja (Até 30 dias)
+        'alerta': 0,        # Laranja-vermelho (31-60 dias)
+        'atencao': 0,       # Amarelo (61-90 dias)
+        'seguro': 0         # Verde (> 90 dias)
+    }
+
+    for p in produtos:
+        if not p.data_validade:
+            continue
+
+        dias_para_vencer = (p.data_validade - hoje).days
+
+        if dias_para_vencer < 0:
+            dados_grafico['vencidos'] += 1
+        elif dias_para_vencer <= 30:
+            dados_grafico['critico'] += 1
+        elif dias_para_vencer <= 60:
+            dados_grafico['alerta'] += 1
+        elif dias_para_vencer <= 90:
+            dados_grafico['atencao'] += 1
+        else:
+            dados_grafico['seguro'] += 1
+
+    Categorias = Categoria.objects.all()
+
+    # Captura os dados do formulário
+    categoria_id = request.GET.get('categoria')
+    unidade = request.GET.get('unidade_medida')
+    tipo_filtro = request.GET.get('tipo_filtro')
+    valor_busca = request.GET.get('valor_busca')
+
+    produtos_lista = Produto.objects.all().order_by('nome_produto')
+
+    # Filtra por Categoria se selecionada
+    if categoria_id:
+        produtos_lista = produtos_lista.filter(categoria_id=categoria_id)
+    
+    if unidade:
+        produtos_lista = produtos_lista.filter(unidade_medida=unidade)
+
+    # Filtra pelo Atributo escolhido
+    if valor_busca:
+        if tipo_filtro == 'id':
+            produtos_lista = produtos_lista.filter(id=valor_busca)
+        elif tipo_filtro == 'nome_produto':
+            produtos_lista = produtos_lista.filter(nome_produto__icontains=valor_busca)
+        elif tipo_filtro == 'preco_venda':
+            produtos_lista = produtos_lista.filter(preco_venda__gte=valor_busca)
+    
+
+    filtros = ['categoria', 'unidade_medida', 'valor_busca', 'tipo_filtro']
+    consulta_feita = any(request.GET.get(f) for f in filtros)
+    
+    context = {
+        'dados_grafico': dados_grafico,
+        'categorias' : Categorias,
+        "produtos_lista" : produtos_lista,
+        'consulta_feita' : consulta_feita,
+    }
+
+
+    return render(request, 'paginas/consulta.html', context)
 
 
 def fechamento(request):

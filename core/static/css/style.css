@@ -28,7 +28,7 @@ body {
 
 .mobile-app {
   min-height: 100vh;
-  max-width: 480px;
+  max-width: 800px;
   margin: 0 auto;
   background: transparent;
   position: relative;
@@ -271,6 +271,8 @@ textarea.form-control {
   border-radius: 999px;
   font-size: 12px;
   font-weight: 800;
+  white-space: nowrap;
+  display: inline-block;
 }
 
 .status.ok {
