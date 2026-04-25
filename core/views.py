@@ -1,6 +1,9 @@
+from decimal import Decimal
 import json
 from django.http import JsonResponse, request
 from django.shortcuts import render, redirect
+from django.utils import timezone
+from datetime import timedelta
 from .models import Cliente, Fornecedor, Produto, Categoria, Venda, ItensVenda
 # Create your views here.
 
@@ -77,6 +80,10 @@ def cadastro(request):
             preco_custo = request.POST.get('preco_custo').replace(',', '.')
             preco_venda = request.POST.get('preco_venda').replace(',', '.')
             quantia = request.POST.get('quantia')
+            if not quantia or quantia.strip() == "":
+                quantia_dedimal = Decimal('0')
+            else:
+                quantia_dedimal = Decimal(quantia.replace(',', '.'))
             unidade_medida = request.POST.get('unidade_medida')
             data_val = request.POST.get('data_validade')
 
@@ -89,8 +96,9 @@ def cadastro(request):
             categoria_instancia = Categoria.objects.get(id=id_cat)
             fornecedor_instancia = Fornecedor.objects.get(id=id_forn)
 
-            #salvando as instâncias
-            Produto.objects.create(
+            #buscando produto com as mesmas características
+            #se não existir, o Django cria. Se existir, ele apenas recupera em 'produto'
+            produto, criado = Produto.objects.get_or_create(
                 nome_produto=nome_produto,
                 categoria=categoria_instancia,
                 fornecedor=fornecedor_instancia,
@@ -98,8 +106,23 @@ def cadastro(request):
                 preco_venda=preco_venda,
                 quantidade_estoque=quantia,
                 unidade_medida=unidade_medida,
-                data_validade=data_val
-                )
+                data_validade=data_val,
+                defaults = {
+                'preco_custo' : preco_custo,
+                'preco_venda' : preco_venda,
+                'quantidade_estoque' : 0
+                }
+            )
+
+            # Agora somamos a nova quantidade à que já existe
+            produto.quantidade_estoque += quantia_dedimal
+            produto.save()
+
+            # Se o produto já existia, talvez seja necessário mudar o valor
+            produto.preco_custo = preco_custo
+            produto.preco_venda = preco_venda
+
+            produto.save()
             
             #podemos pedir uma mensagem de sucesso aqui dps
             return redirect('cadastro')
