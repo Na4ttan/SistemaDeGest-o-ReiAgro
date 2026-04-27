@@ -1,25 +1,27 @@
 <div class="offcanvas offcanvas-start sidebar-custom" tabindex="-1" id="menuLateral">
   <div class="offcanvas-body pt-3">
     <div class="menu-nav nav flex-column nav-pills mt-4">
-      <a href="{% url 'home' %}" class="nav-link active">
+      
+      <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
         <i class="bi bi-cart3"></i>
         <span>Frente de Caixa</span>
       </a>
 
-      <a href="{% url 'cadastro' %}" class="nav-link">
+      <a href="{% url 'cadastro' %}" class="nav-link {% if request.resolver_match.url_name == 'cadastro' %}active{% endif %}">
         <i class="bi bi-person-plus"></i>
         <span>Cadastro</span>
       </a>
 
-      <a href="{% url 'consulta' %}" class="nav-link">
+      <a href="{% url 'consulta' %}" class="nav-link {% if request.resolver_match.url_name == 'consulta' %}active{% endif %}">
         <i class="bi bi-box-seam"></i>
         <span>Consulta de Estoque</span>
       </a>
 
-      <a href="{% url 'fechamento' %}" class="nav-link">
+      <a href="{% url 'fechamento' %}" class="nav-link {% if request.resolver_match.url_name == 'fechamento' %}active{% endif %}">
         <i class="bi bi-cash-coin"></i>
         <span>Fechamento de Caixa</span>
       </a>
+      
     </div>
   </div>
 </div>
