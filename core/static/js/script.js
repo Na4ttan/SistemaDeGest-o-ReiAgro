@@ -25,50 +25,79 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Verifica se estamos na página de venda antes de rodar a lógica
   if (selectProduto) {
-    selectProduto.addEventListener('change', function () {
-      const option = this.options[this.selectedIndex];
-      const preco = option.getAttribute('data-preco');
+  selectProduto.addEventListener('change', function () {
+    const option = this.options[this.selectedIndex];
+    const preco = option.getAttribute('data-preco');
+    const unidade = option.getAttribute('data-unidade'); // Pegando a unidade
 
-      if (preco) {
-        const valor = parseFloat(preco);
-        inputPreco.value = valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-        inputPreco.setAttribute('data-valor-puro', preco);
-      }
-    });
-  }
-
-  // Função Global para adicionar item
-  window.adicionarItem = function () {
-    if (!selectProduto || !inputPreco) return;
-
-    const option = selectProduto.options[selectProduto.selectedIndex]; // Pega a opção selecionada
-    const produtoId = selectProduto.value; 
-    const nomeExibicao = option.text;
-    const unidadeMedida = option.getAttribute('data-unidade'); // CAPTURA A UNIDADE AQUI
-    
-    const precoPuro = inputPreco.getAttribute('data-valor-puro');
-    const qtd = inputQuantidade.value; // Removi o parseInt para aceitar decimais (KG, LT)
-
-    if (!produtoId || !precoPuro) {
-      alert("Por favor, selecione um produto primeiro!");
-      return;
+    if (preco) {
+      const valor = parseFloat(preco);
+      inputPreco.value = valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      inputPreco.setAttribute('data-valor-puro', preco);
     }
 
-    itensVenda.push({
-      id: produtoId,
-      produto: nomeExibicao,
-      unidade: unidadeMedida, // GUARDA A UNIDADE NO OBJETO
-      quantidade: parseFloat(qtd),
-      preco: parseFloat(precoPuro),
-      subtotal: parseFloat(precoPuro) * parseFloat(qtd)
-    });
+    // REGRA DE GRANEL:
+    if (unidade === 'KG') {
+      inputQuantidade.step = "0.001"; // Permite 3 casas decimais
+    } else {
+      inputQuantidade.step = "1";     // Bloqueia as setas do teclado para inteiros
+      inputQuantidade.value = Math.round(inputQuantidade.value) || 1; // Arredonda se já houver valor
+    }
+  });
+}
+  
 
-    atualizarResumo();
+  // Função Global para adicionar item
+// Função Global para adicionar item
+window.adicionarItem = function () {
+  if (!selectProduto || !inputPreco) return;
 
-    selectProduto.value = "";
-    inputPreco.value = "";
-    inputQuantidade.value = 1;
-  };
+  const option = selectProduto.options[selectProduto.selectedIndex];
+  const produtoId = selectProduto.value; // Adicionado
+  const nomeExibicao = option.text; // Adicionado
+  const unidadeMedida = option.getAttribute('data-unidade');
+  const precoPuro = inputPreco.getAttribute('data-valor-puro'); // Adicionado
+  
+  const qtdString = inputQuantidade.value.replace(',', '.');
+  const qtd = parseFloat(qtdString);
+
+  // 1. Validação de seleção
+  if (!produtoId || !precoPuro) {
+    alert("Por favor, selecione um produto primeiro!");
+    return;
+  }
+
+  // 2. Validação de quantidade zero ou negativa
+  if (qtd <= 0 || isNaN(qtd)) {
+    alert("A quantidade deve ser maior que zero!");
+    return;
+  }
+
+  // 3. VALIDAÇÃO DE FRAÇÃO
+  // Se não for KG e a quantidade tiver casas decimais
+  if (unidadeMedida !== 'KG' && qtd % 1 !== 0) {
+    alert("Produtos com unidade '" + unidadeMedida + "' só podem ser vendidos em quantidades inteiras!");
+    return;
+  }
+
+  // 4. Adiciona ao array
+  itensVenda.push({
+    id: produtoId,
+    produto: nomeExibicao,
+    unidade: unidadeMedida,
+    quantidade: qtd,
+    preco: parseFloat(precoPuro),
+    subtotal: parseFloat(precoPuro) * qtd
+  });
+
+  // 5. Atualiza a tela e limpa os campos
+  atualizarResumo();
+
+  selectProduto.value = "";
+  inputPreco.value = "";
+  inputQuantidade.value = 1;
+  inputQuantidade.step = "1"; // Reseta o step para o padrão
+};
 
   window.removerItem = function (index) {
     // Remove 1 elemento na posição 'index'
