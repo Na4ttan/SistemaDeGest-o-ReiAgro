@@ -41,25 +41,26 @@ document.addEventListener('DOMContentLoaded', function () {
   window.adicionarItem = function () {
     if (!selectProduto || !inputPreco) return;
 
-    // Pega o ID (value) e o Nome formatado (text)
+    const option = selectProduto.options[selectProduto.selectedIndex]; // Pega a opção selecionada
     const produtoId = selectProduto.value; 
-    const nomeExibicao = selectProduto.options[selectProduto.selectedIndex].text;
+    const nomeExibicao = option.text;
+    const unidadeMedida = option.getAttribute('data-unidade'); // CAPTURA A UNIDADE AQUI
     
     const precoPuro = inputPreco.getAttribute('data-valor-puro');
-    const qtd = parseInt(inputQuantidade.value);
+    const qtd = inputQuantidade.value; // Removi o parseInt para aceitar decimais (KG, LT)
 
     if (!produtoId || !precoPuro) {
       alert("Por favor, selecione um produto primeiro!");
       return;
     }
 
-    // Guarda o ID para o Django e o Nome para o HTML
     itensVenda.push({
       id: produtoId,
       produto: nomeExibicao,
-      quantidade: qtd,
+      unidade: unidadeMedida, // GUARDA A UNIDADE NO OBJETO
+      quantidade: parseFloat(qtd),
       preco: parseFloat(precoPuro),
-      subtotal: parseFloat(precoPuro) * qtd
+      subtotal: parseFloat(precoPuro) * parseFloat(qtd)
     });
 
     atualizarResumo();
@@ -93,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="sale-item d-flex justify-content-between align-items-center">
         <div>
             <strong>${item.produto}</strong>
-            <small class="d-block">${item.quantidade} un.</small>
+            <small class="d-block">${item.quantidade} ${item.unidade.toLowerCase()}</small>
         </div>
         <div class="d-flex align-items-center">
             <span class="me-3">R$ ${item.subtotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
