@@ -218,3 +218,84 @@ window.finalizarVenda = function () {
       }
     });
 };
+
+let html5QrCode;
+
+window.alternarCamera = function() {
+    const readerDiv = document.getElementById('reader');
+    const btnCamera = document.querySelector('button[onclick="alternarCamera()"]'); // Seleciona o botão
+    
+    if (readerDiv.style.display === 'none' || readerDiv.style.display === '') {
+        // PREPARAÇÃO PARA ABRIR
+        readerDiv.style.display = 'block';
+        btnCamera.innerHTML = '<i class="bi bi-camera-video-off"></i> Fechar Câmera'; // Altera ícone e texto
+        btnCamera.classList.replace('btn-outline-rei', 'btn-danger'); // Opcional: muda a cor para vermelho
+        startScanner();
+    } else {
+        // PREPARAÇÃO PARA FECHAR
+        stopScanner();
+        readerDiv.style.display = 'none';
+        btnCamera.innerHTML = '<i class="bi bi-camera"></i> Abrir Câmera'; // Volta ao original
+        btnCamera.classList.replace('btn-danger', 'btn-outline-rei'); // Volta a cor original
+    }
+}
+
+function startScanner() {
+    // Garante que se já houver uma instância rodando, ela seja limpa antes
+    if (html5QrCode) {
+        html5QrCode.clear();
+    }
+
+    html5QrCode = new Html5Qrcode("reader");
+
+    // Configurações otimizadas para leitura de códigos de barras (que são mais largos)
+    const config = { 
+        fps: 15, // Aumentei um pouco o FPS para ficar mais fluido
+        qrbox: { width: 300, height: 180 }, // Caixa retangular é melhor para código de barras de fábrica
+        aspectRatio: 1.0 // Garante proporção quadrada no preview
+    };
+
+    // A preferência pela câmera traseira é dada pelo 'facingMode: environment'
+    html5QrCode.start(
+        { facingMode: { exact: "environment" } }, // 'exact' força a traseira, se falhar ele cai no catch
+        config,
+        (decodedText) => {
+            const inputScan = document.getElementById('input-scan');
+            inputScan.value = decodedText;
+            
+            // Dispara o evento de busca que já criamos
+            const event = new KeyboardEvent('keypress', { 
+                key: 'Enter',
+                bubbles: true // Garante que o evento suba na árvore do DOM
+            });
+            inputScan.dispatchEvent(event);
+
+            // Feedback tátil para o celular (vibração curta ao ler com sucesso)
+            if (navigator.vibrate) {
+                navigator.vibrate(100);
+            }
+        },
+        (errorMessage) => { /* Ignora erros de frame para não poluir o console */ }
+    ).catch(err => {
+        // Se 'exact: environment' falhar (ex: PC sem câmera traseira), tenta o modo normal
+        console.warn("Câmera traseira exata não encontrada, tentando modo padrão...");
+        html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
+            document.getElementById('input-scan').value = decodedText;
+            document.getElementById('input-scan').dispatchEvent(new KeyboardEvent('keypress', { key: 'Enter' }));
+        }).catch(err2 => {
+            alert("Erro crítico ao acessar câmera: " + err2);
+            alternarCamera(); // Fecha o leitor se der erro total
+        });
+    });
+}
+
+function stopScanner() {
+    if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode.stop()
+            .then(() => {
+                html5QrCode.clear();
+                console.log("Câmera desligada.");
+            })
+            .catch(err => console.error("Erro ao parar câmera:", err));
+    }
+}

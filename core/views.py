@@ -20,16 +20,18 @@ def frente_caixa(request):
             # Para cada item na lista do JS, criamos uma Venda no banco
             for item in itens:
                 produto_obj = Produto.objects.get(id=item['id'])
+                qtd_decimal = Decimal(str(item['quantidade']))
+
                 Venda.objects.create(
                     cliente=cliente_nome,
                     produto=item['produto'],
-                    quantidade=item['quantidade'],
+                    quantidade=qtd_decimal,
                     preco=item['preco'],
                     forma_de_pagamento=forma_pagamento
                 )
 
                 # subitraindo a quantidade vendida para atualizar o estoque
-                produto_obj.quantidade_estoque -= item['quantidade']
+                produto_obj.quantidade_estoque -= qtd_decimal
 
                 # salva a alteração no banco
                 produto_obj.save()

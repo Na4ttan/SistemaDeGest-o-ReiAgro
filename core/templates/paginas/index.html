@@ -25,11 +25,15 @@
 
     <div class="mb-3">
       <label class="form-label fw-bold">Leitor de Código de Barras</label>
-        <div class="input-group">
+        <div class="input-group mb-2">
           <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
-          <input type="text" id="input-scan" class="form-control" placeholder="Aponte o leitor ou digite o código..." autofocus>
+          <input type="text" id="input-scan" class="form-control" placeholder="Aponte o leitor ou digite..." autofocus>
+          <button class="btn btn-outline-rei" type="button" onclick="alternarCamera()">
+            <i class="bi bi-camera"></i> Abrir Câmera
+          </button>
         </div>
-    </div>
+    <div id="reader" style="width: 100%; display: none;" class="rounded border"></div>
+</div>
 
     <div class="mb-3">
       <label class="form-label">Produto (Seleção Manual)</label>
