@@ -23,6 +23,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const inputPreco = document.getElementById('input-preco');
   const inputQuantidade = document.getElementById('input-quantidade');
 
+  const inputScan = document.getElementById('input-scan');
+
   // Verifica se estamos na página de venda antes de rodar a lógica
   if (selectProduto) {
   selectProduto.addEventListener('change', function () {
@@ -44,6 +46,40 @@ document.addEventListener('DOMContentLoaded', function () {
       inputQuantidade.value = Math.round(inputQuantidade.value) || 1; // Arredonda se já houver valor
     }
   });
+  if (inputScan) {
+    inputScan.addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault(); // Evita que o formulário seja enviado acidentalmente
+        const codigoBipado = this.value.trim();
+
+        if (codigoBipado === "") return;
+
+        let produtoEncontrado = false;
+
+        // Procura o código nos atributos do select
+        Array.from(selectProduto.options).forEach(option => {
+          if (option.getAttribute('data-codigo') === codigoBipado) {
+            // Seleciona o produto e dispara o 'change' para carregar preço/unidade
+            selectProduto.value = option.value;
+            selectProduto.dispatchEvent(new Event('change'));
+            
+            // Chama a função de adicionar que já existe
+            window.adicionarItem();
+            
+            produtoEncontrado = true;
+          }
+        });
+
+        if (!produtoEncontrado) {
+          alert("Produto não encontrado!");
+        }
+
+        this.value = ''; // Limpa para o próximo bipe
+        this.focus();    // Garante que o foco continue no campo de scan
+      }
+    });
+  
+}
 }
   
 

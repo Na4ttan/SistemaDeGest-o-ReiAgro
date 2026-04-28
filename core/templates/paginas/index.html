@@ -24,19 +24,28 @@
     </div>
 
     <div class="mb-3">
-      <label class="form-label">Produto</label>
-      <select class="form-select" id="select-produto">
-        <option value="" selected disabled>Selecione o produto...</option>
-        {% for produto in produtos %}
-            <option value="{{ produto.id }}" 
+      <label class="form-label fw-bold">Leitor de Código de Barras</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
+          <input type="text" id="input-scan" class="form-control" placeholder="Aponte o leitor ou digite o código..." autofocus>
+        </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Produto (Seleção Manual)</label>
+        <select class="form-select" id="select-produto">
+          <option value="" selected disabled>Selecione o produto...</option>
+            {% for produto in produtos %}
+              <option value="{{ produto.id }}" 
                     data-nome="{{ produto.nome_produto }}" 
                     data-preco="{{ produto.preco_venda }}"
-                    data-unidade="{{ produto.unidade_medida }}"> 
+                    data-unidade="{{ produto.unidade_medida }}"
+                    data-codigo="{{ produto.codigo_barras }}"> 
                 {{ produto.nome_produto }}  
                 {% if produto.data_validade %}(Venc: {{ produto.data_validade|date:"d/m/Y" }}){% endif %}
-            </option>
-        {% endfor %}
-      </select>
+              </option>
+            {% endfor %}
+        </select>
     </div>
 
     <div class="mb-3">
