@@ -157,7 +157,7 @@ window.finalizarVenda = function () {
   };
 
   // Enviando para o Django
-  fetch('', { // O '' significa que envia para a mesma URL atual
+  fetch('', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -169,7 +169,14 @@ window.finalizarVenda = function () {
     .then(data => {
       if (data.status === 'sucesso') {
         alert("Venda realizada com sucesso!");
-        location.reload(); // Recarrega a página para limpar tudo
+        
+        // NOVO: Abre uma nova janela para impressão do recibo
+        const janelaRecibo = window.open('', '_blank');
+        janelaRecibo.document.write(data.recibo_html);
+        janelaRecibo.document.close();
+        janelaRecibo.print(); // Opcional: abre a caixa de impressão automaticamente
+
+        location.reload();
       } else {
         alert("Erro ao salvar: " + data.mensagem);
       }

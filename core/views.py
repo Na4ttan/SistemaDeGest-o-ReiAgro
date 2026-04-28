@@ -15,6 +15,7 @@ def frente_caixa(request):
             itens = data.get('itens')
             cliente_nome = data.get('cliente')
             forma_pagamento = data.get('forma_pagamento')
+            total_venda = 0
 
             # Para cada item na lista do JS, criamos uma Venda no banco
             for item in itens:
@@ -33,9 +34,48 @@ def frente_caixa(request):
                 # salva a alteração no banco
                 produto_obj.save()
 
-            return JsonResponse({'status': 'sucesso', 'mensagem': 'Venda salva com sucesso!'})
+                total_venda += float(item['subtotal'])
+
+            recibo_html = f"""
+            <html>
+            <head><style>
+                body {{ font-family: monospace; width: 300px; }}
+                .text-center {{ text-align: center; }}
+                .separador {{ border-top: 1px dashed #000; margin: 10px 0; }}
+            </style></head>
+            <body>
+                <h2 class="text-center">REI AGRO</h2>
+                <p class="text-center">Loja 02 - JD. Colina I<br>Fone: 19 989900845</p>
+
+                <p class="text-center">Recibo de Venda</p>
+                <p>Cliente: {cliente_nome}</p>
+                <div class="separador"></div>
+                <table>
+                    <thead><tr><th>Prod</th><th>Qtd</th><th>Total</th></tr></thead>
+                    <tbody>
+            """
+            for item in itens:
+                recibo_html += f"<tr><td>{item['produto']}</td><td>{item['quantidade']} {item['unidade']}</td><td>R$ {item['subtotal']:.2f}</td></tr>"
+
+            recibo_html += f"""
+                    </tbody>
+                </table>
+                <div class="separador"></div>
+                <p><strong>TOTAL: R$ {total_venda:.2f}</strong></p>
+                <p>Pagamento: {forma_pagamento}</p>
+                <p class="text-center">Obrigado pela preferência!</p>
+            </body>
+            </html>
+            """
+
+            return JsonResponse({
+                'status': 'sucesso', 
+                'mensagem': 'Venda salva!',
+                'recibo_html': recibo_html # Enviamos o HTML pronto para o JS
+            })
         except Exception as e:
             return JsonResponse({'status': 'erro', 'mensagem': str(e)}, status=400)
+
     # Busca os dados reias para o HTML
     produtos = Produto.objects.all().order_by('data_validade', 'nome_produto')
 
