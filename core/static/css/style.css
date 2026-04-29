@@ -395,3 +395,8 @@ textarea.form-control {
     white-space: normal !important; /* Permite a quebra de linha no texto */
     vertical-align: top;
 }
+
+#reader video {
+    object-fit: cover !important;
+    filter: contrast(1.2) brightness(1.1); /* Melhora a definição das barras */
+}
