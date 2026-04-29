@@ -6,19 +6,217 @@
 <section id="aba-fechamento">
     <div class="hero-card">
         <div>
-            <span class="hero-badge">Resumo diário</span>
+            <!--<span class="hero-badge">Resumo diário</span>-->
             <h2>Fechamento de Caixa</h2>
         </div>
         <div class="hero-icon"><i class="bi bi-wallet2"></i></div>
     </div>
 
     <div class="app-card">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Produtos vendidos</th>
+                    <th>Quantia</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Nutrição animal</td>
+                    <td>10</td>
+                </tr>
+                <tr>
+                    <td>Jardinagem e Agro</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td>Saúde Animal</td>
+                    <td>1</td>
+                </tr>
+                <tr>
+                    <td>Acessórios e outros</td>
+                    <td>5</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr class="fw-bold">
+                    <td>Total</td>
+                    <td>18</td>
+                </tr>
+            </tfoot>
+        </table>
     </div>
+
+    <div class="app-card">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Forma de pagamento</th>
+                    <th>Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Dinheiro</td>
+                    <td>200</td>
+                </tr>
+                <tr>
+                    <td>PIX</td>
+                    <td>1900</td>
+                </tr>
+                <tr>
+                    <td>Crédito</td>
+                    <td>200</td>
+                </tr>
+                <tr>
+                    <td>Débito</td>
+                    <td>300</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr class="fw-bold">
+                    <td>Total vendido</td>
+                    <td>2600</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="app-card p-3 shadow-sm border-0 mt-3" style="background-color: #fff5f5;"> 
+    <h6 class="fw-bold text-danger mb-3">
+        <i class="bi bi-dash-circle me-1"></i> Nova Sangria
+    </h6>
+    
+    <div class="row g-3 align-items-end">
+        <div class="col-md-7">
+            <label for="sangria_motivo" class="form-label small fw-bold text-secondary">Motivo / Descrição</label>
+            <input type="text" class="form-control" id="sangria_motivo" name="sangria_motivo" placeholder="Ex: Pagamento fornecedor de ração">
+        </div>
+
+        <div class="col-md-3">
+            <label for="sangria_valor" class="form-label small fw-bold text-secondary">Valor</label>
+            <div class="input-group">
+                <span class="input-group-text">R$</span>
+                <input type="number" step="0.01" class="form-control" id="sangria_valor" name="sangria_valor" placeholder="0,00">
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <button type="button" class="btn btn-outline-danger w-100">
+                Adicionar
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="app-card">
+    <h6 class="fw-bold text-secondary mb-3">Resumo de Dinheiro em Caixa</h6>
+    <table class="table table-sm">
+        <thead>
+            <tr class="table-light">
+                <th>Descrição</th>
+                <th class="text-end">Valor (R$)</th>
+            </tr>
+        </thead>
+        <tbody id="corpo-tabela-dinamica">
+            <tr>
+                <td>Vendas em Dinheiro (Hoje)</td>
+                <td class="text-end" id="resumo-vendas">200,00</td>
+            </tr>
+            <tr class="text-muted italic">
+                <td>(+) Fundo de Abertura (Ontem)</td>
+                <td class="text-end" id="fundo-abertura-valor">{{ fundo_abertura_anterior|default:"0.00" }}</td>
+            </tr>
+            </tbody>
+        <tfoot>
+            <tr class="fw-bold border-top border-dark">
+                <td>Total em Caixa (Conferência)</td>
+                <td class="text-end text-success" id="total-em-caixa">0,00</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+
+    <div class="app-card p-3 shadow-sm border-0">
+    <div class="row align-items-end">
+        <div class="col-md-6 mb-3 mb-md-0">
+            <label for="fundo_de_caixa" class="form-label fw-bold text-secondary">
+                Fundo de Caixa (Próxima Abertura)
+            </label>
+            <div class="input-group">
+                <span class="input-group-text">R$</span>
+                <input type="number" class="form-control form-control-lg" id="fundo_de_caixa" name="fundo_de_caixa" placeholder="0,00">
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="p-2 bg-light border rounded">
+                <small class="text-uppercase text-muted d-block mb-1 fw-bold" style="font-size: 0.75rem;">
+                    Recolhimento de Caixa
+                </small>
+                <span class="h4 mb-0 text-primary">R$ 260,00</span>
+            </div>
+        </div>
+    </div>
+</div>
 
     <div class="app-card">
         <label class="form-label">Observações</label>
         <textarea class="form-control" rows="4"></textarea>
         <button class="btn btn-rei w-100 mt-3">Fechar caixa</button>
     </div>
+
+    <script>
+    let vendasDinheiro = 200.00; // Valor que vem do seu backend
+    let totalSangrias = 0;
+
+    function adicionarSangria() {
+        const motivo = document.getElementById('sangria_motivo').value;
+        const valorInput = document.getElementById('sangria_valor');
+        const valor = parseFloat(valorInput.value);
+
+        if (!motivo || isNaN(valor)) {
+            alert("Por favor, preencha o motivo e o valor da sangria.");
+            return;
+        }
+
+        // 1. Adiciona a linha na tabela dinâmica
+        const tabela = document.getElementById('corpo-tabela-dinamica');
+        const novaLinha = `
+            <tr class="text-danger small">
+                <td>Sangria: ${motivo}</td>
+                <td class="text-end">- ${valor.toFixed(2)}</td>
+            </tr>
+        `;
+        tabela.innerHTML += novaLinha;
+
+        // 2. Atualiza os cálculos
+        totalSangrias += valor;
+        atualizarTotais();
+
+        // 3. Limpa os campos
+        document.getElementById('sangria_motivo').value = '';
+        valorInput.value = '';
+    }
+
+    function atualizarTotais() {
+        const totalAtual = vendasDinheiro - totalSangrias;
+        const fundoCaixa = parseFloat(document.getElementById('fundo_de_caixa').value) || 0;
+        
+        // Atualiza o "Total em Caixa" na tabela
+        document.getElementById('total-em-caixa').innerText = totalAtual.toFixed(2);
+        
+        // Atualiza o "Recolhimento de Caixa" (Total - Fundo de Abertura)
+        const recolhimento = totalAtual - fundoCaixa;
+        document.querySelector('.h4.text-primary').innerText = `R$ ${recolhimento.toFixed(2)}`;
+    }
+
+    // Vincula o botão de adicionar
+    document.querySelector('.btn-outline-danger').addEventListener('click', adicionarSangria);
+    
+    // Vincula o campo de fundo de caixa para atualizar o recolhimento em tempo real
+    document.getElementById('fundo_de_caixa').addEventListener('input', atualizarTotais);
+</script>
 </section>
 {% endblock %}

@@ -4,7 +4,7 @@ from django.http import JsonResponse, request
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from datetime import timedelta
-from .models import Cliente, Fornecedor, Produto, Categoria, Venda, ItensVenda
+from .models import Cliente, Fornecedor, Produto, Categoria, Venda, ItensVenda, FechamentoCaixa, Sangria
 # Create your views here.
 
 
@@ -282,4 +282,14 @@ def consulta(request):
 
 
 def fechamento(request):
-    return render(request, 'paginas/fechamento.html')
+    # Busca o último fechamento realizado no banco de dados
+    ultimo_fechamento = FechamentoCaixa.objects.order_by('-data_criacao').first()
+    
+    # Se existir um fechamento anterior, pegamos o valor que foi deixado
+    fundo_abertura_anterior = ultimo_fechamento.fundo_reserva_proximo_dia if ultimo_fechamento else 0
+    
+    context = {
+        'fundo_abertura_anterior': fundo_abertura_anterior,
+        # ... outros dados de vendas ...
+    }
+    return render(request, 'paginas/fechamento.html', context)
