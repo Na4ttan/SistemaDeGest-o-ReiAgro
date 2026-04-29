@@ -170,7 +170,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const dadosVenda = {
             cliente: clienteNome,
             forma_pagamento: formaPagamento,
-            itens: itensVenda
+            itens: itensVenda,
+            total_venda : parseFloat(document.getElementById('valor-total-exibicao').innerText.replace('R$', '').replace(',', '.'))
         };
 
         fetch('', {

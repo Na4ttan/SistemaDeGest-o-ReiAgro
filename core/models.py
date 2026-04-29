@@ -59,7 +59,7 @@ class Venda(models.Model):
     produto = models.CharField(max_length=200, default='Geral')
     quantidade = models.DecimalField(
         max_digits=10, decimal_places=3, default=1.000)
-    preco = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    valorTotal = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     data_venda = models.DateTimeField(auto_now_add=True)
     forma_de_pagamento = models.CharField(max_length=8, default="Dinheiro")
 

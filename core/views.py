@@ -15,19 +15,31 @@ def frente_caixa(request):
             itens = data.get('itens')
             cliente_nome = data.get('cliente')
             forma_pagamento = data.get('forma_pagamento')
-            total_venda = 0
+            # Captura o total enviado pelo JS (usaremos o nome 'total_venda')
+            total_enviado = data.get('total_venda', 0)
 
-            # Para cada item na lista do JS, criamos uma Venda no banco
+            nova_venda = Venda.objects.create(
+                cliente=cliente_nome,
+                forma_de_pagamento=forma_pagamento,
+                produto="Múltiplos Itens",
+                quantidade=1,
+                valorTotal=Decimal(str(total_enviado))
+            )
+
+            total_venda_calculado = 0
+
+            # percorrendo os itens
             for item in itens:
                 produto_obj = Produto.objects.get(id=item['id'])
                 qtd_decimal = Decimal(str(item['quantidade']))
+                preco_unit = Decimal(str(item['preco']))
 
-                Venda.objects.create(
-                    cliente=cliente_nome,
-                    produto=item['produto'],
+                #salvando na tabela itensvenda
+                ItensVenda.objects.create(
+                    venda=nova_venda, # Aqui vinculamos ao ID da venda única
+                    produto=produto_obj,
                     quantidade=qtd_decimal,
-                    preco=item['preco'],
-                    forma_de_pagamento=forma_pagamento
+                    preco_unitario=preco_unit
                 )
 
                 # subitraindo a quantidade vendida para atualizar o estoque
@@ -36,7 +48,7 @@ def frente_caixa(request):
                 # salva a alteração no banco
                 produto_obj.save()
 
-                total_venda += float(item['subtotal'])
+                total_venda_calculado += float(item['subtotal'])
 
             recibo_html = f"""
             <html>
@@ -63,7 +75,7 @@ def frente_caixa(request):
                     </tbody>
                 </table>
                 <div class="separador"></div>
-                <p><strong>TOTAL: R$ {total_venda:.2f}</strong></p>
+                <p><strong>TOTAL: R$ {total_venda_calculado:.2f}</strong></p>
                 <p>Pagamento: {forma_pagamento}</p>
                 <p class="text-center">Obrigado pela preferência!</p>
             </body>
