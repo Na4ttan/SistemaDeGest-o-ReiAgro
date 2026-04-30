@@ -155,6 +155,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (totalExibicao) totalExibicao.innerText = `R$ ${totalGeral.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
         if (contador) contador.innerText = `${itensVenda.length} item(ns)`;
+
+        if (typeof calcularTroco === "function") calcularTroco();
     }
 
     window.finalizarVenda = function () {
@@ -197,9 +199,49 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     };
 
-}); // <--- O FECHAMENTO DO DOMContentLoaded AGORA ESTÁ NO LUGAR CERTO (Aqui!)
+    // --- LÓGICA DE TROCO ---
+    const selectPagamento = document.getElementById('select-pagamento');
+    const secaoTroco = document.getElementById('secao-troco');
+    const inputRecebido = document.getElementById('input-valor-recebido');
+    const displayTroco = document.getElementById('valor-troco');
 
-// --- FUNÇÕES DA CÂMERA (Ficam fora para serem acessadas pelo HTML) ---
+    function calcularTroco() {
+        // Captura o total atual da venda removendo o "R$" e formatando para número
+        const totalVendaStr = document.getElementById('valor-total-exibicao').innerText
+            .replace('R$', '').replace('.', '').replace(',', '.').trim();
+        const totalVenda = parseFloat(totalVendaStr) || 0;
+        
+        const valorRecebido = parseFloat(inputRecebido.value) || 0;
+        const troco = valorRecebido - totalVenda;
+
+        if (troco > 0) {
+            displayTroco.innerText = `R$ ${troco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+            displayTroco.classList.replace('text-danger', 'text-success');
+        } else if (troco < 0) {
+            displayTroco.innerText = `Faltam R$ ${Math.abs(troco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+            displayTroco.classList.replace('text-success', 'text-danger');
+        } else {
+            displayTroco.innerText = "R$ 0,00";
+            displayTroco.classList.add('text-success');
+        }
+    }
+
+    // Evento para mostrar/esconder campo de troco
+    selectPagamento.addEventListener('change', function() {
+        if (this.value === 'Dinheiro') {
+            secaoTroco.style.display = 'block';
+        } else {
+            secaoTroco.style.display = 'none';
+            inputRecebido.value = ''; // Limpa o campo se mudar de ideia
+        }
+    });
+
+    // Evento para calcular enquanto o usuário digita
+    inputRecebido.addEventListener('input', calcularTroco);
+
+}); // <--- O FECHAMENTO DO DOMContentLoaded AGORA ESTÁ NO LUGAR CERTO 
+
+// --- FUNÇÕES DA CÂMERA 
 
 window.alternarCamera = function () {
     const readerDiv = document.getElementById('reader');
