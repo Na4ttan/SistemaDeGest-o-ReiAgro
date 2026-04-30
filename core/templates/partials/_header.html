@@ -11,7 +11,33 @@
     </div>
   </div>
 
-  <div class="profile-mini">
-    <i class="bi bi-person-circle"></i>
+  <div class="dropdown profile-mini">
+    <a href="#" role="button" id="dropdownPerfil" data-bs-toggle="dropdown" aria-expanded="false" style="text-decoration: none; color: inherit;">
+      <i class="bi bi-person-circle"></i>
+    </a>
+
+    <ul class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="dropdownPerfil" style="min-width: 200px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+      <li class="text-center mb-2">
+        <span class="fw-bold d-block">{{ user.username }}</span> <!-- Exibe o nome do Natan ou admin -->
+        <small class="text-muted">Usuário Ativo</small>
+      </li>
+      
+      <li><hr class="dropdown-divider"></li>
+
+      <li>
+        <button class="btn btn-outline-primary btn-sm w-100 mb-2" type="button">
+          <i class="bi bi-person-plus"></i> Adicionar Usuário
+        </button>
+      </li>
+
+      <li>
+        <form action="{% url 'logout' %}" method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger btn-sm w-100">
+            <i class="bi bi-box-arrow-right"></i> Sair
+          </button>
+        </form>
+      </li>
+    </ul>
   </div>
 </header>

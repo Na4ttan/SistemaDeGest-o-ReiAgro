@@ -5,9 +5,11 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 from datetime import timedelta
 from .models import Cliente, Fornecedor, Produto, Categoria, Venda, ItensVenda, FechamentoCaixa, Sangria
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 
+@login_required
 def frente_caixa(request):
     if request.method == 'POST':
         try:
@@ -105,7 +107,7 @@ def frente_caixa(request):
     return render(request, 'paginas/index.html', context)
 
 
-
+@login_required
 def cadastro(request):
     if request.method == 'POST':
         # Verifica qual formulário foi enviado.
@@ -207,7 +209,7 @@ def cadastro(request):
             
     return render(request, 'paginas/cadastro.html', context)
 
-
+@login_required
 def consulta(request):
     hoje = timezone.now().date()
     # Filtra produtos da categoria específica
@@ -280,7 +282,7 @@ def consulta(request):
 
     return render(request, 'paginas/consulta.html', context)
 
-
+@login_required
 def fechamento(request):
     # Busca o último fechamento realizado no banco de dados
     ultimo_fechamento = FechamentoCaixa.objects.order_by('-data_criacao').first()
