@@ -142,62 +142,50 @@ def cadastro(request):
             #podemos pedir uma mensagem de sucesso aqui dps
             return redirect(url_destino)
 
-        #Cadastro de produto
+        # --- Cadastro de produto ---
         elif 'nome_produto' in request.POST:
             nome_produto = request.POST.get('nome_produto')
-            categoria = request.POST.get('id_categoria')
-            fornecedor = request.POST.get('id_fornecedor')
             preco_custo = request.POST.get('preco_custo').replace(',', '.')
             preco_venda = request.POST.get('preco_venda').replace(',', '.')
             quantia = request.POST.get('quantia')
             barcode = request.POST.get('barcode')
-            if not quantia or quantia.strip() == "":
-                quantia_dedimal = Decimal('0')
-            else:
-                quantia_dedimal = Decimal(quantia.replace(',', '.'))
             unidade_medida = request.POST.get('unidade_medida')
-            data_val = request.POST.get('data_validade')
-
+            data_val = request.POST.get('data_validade') or None
             id_cat = request.POST.get('id_categoria')
             id_forn = request.POST.get('id_fornecedor')
-            if not data_val:
-                data_val = None
 
-            #busca instâncias reais
+            # CORREÇÃO AQUI: Nome da variável corrigido para 'quantia_decimal' (com C)
+            if not quantia or quantia.strip() == "":
+                quantia_decimal = Decimal('0')
+            else:
+                quantia_decimal = Decimal(quantia.replace(',', '.'))
+
+            # Busca instâncias reais
             categoria_instancia = Categoria.objects.get(id=id_cat)
             fornecedor_instancia = Fornecedor.objects.get(id=id_forn)
 
-            #buscando produto com as mesmas características
-            #se não existir, o Django cria. Se existir, ele apenas recupera em 'produto'
-            produto, criado = Produto.objects.get_or_create(
-                nome_produto=nome_produto,
-                categoria=categoria_instancia,
-                fornecedor=fornecedor_instancia,
-                preco_custo=preco_custo,
-                preco_venda=preco_venda,
-                quantidade_estoque=quantia,
-                unidade_medida=unidade_medida,
+            # Criando ou atualizando o produto
+            produto, criado = Produto.objects.update_or_create(
                 codigo_barras=barcode,
                 data_validade=data_val,
-                defaults = {
-                'preco_custo' : preco_custo,
-                'preco_venda' : preco_venda,
-                'quantidade_estoque' : 0
+                defaults={
+                    'nome_produto': nome_produto,
+                    'categoria': categoria_instancia,
+                    'fornecedor': fornecedor_instancia,
+                    'preco_custo': Decimal(preco_custo),
+                    'preco_venda': Decimal(preco_venda),
+                    'unidade_medida': unidade_medida,
                 }
             )
 
-            # Agora somamos a nova quantidade à que já existe
-            produto.quantidade_estoque += quantia_dedimal
-            produto.save()
-
-            # Se o produto já existia, talvez seja necessário mudar o valor
-            produto.preco_custo = preco_custo
-            produto.preco_venda = preco_venda
+            # Lógica de estoque
+            if criado:
+                produto.quantidade_estoque = quantia_decimal
+            else:
+                produto.quantidade_estoque += quantia_decimal
 
             produto.save()
-            
-            #podemos pedir uma mensagem de sucesso aqui dps
-            return redirect('paginas/cadastro')
+            return redirect('cadastro')
 
         #cadastro de fornecedor
         elif "nome_fantasia" in request.POST:
@@ -214,6 +202,7 @@ def cadastro(request):
             )
             #podemos pedir uma mensagem de sucesso aqui dps
             return redirect('cadastro')
+
     #busca os dados reais para preencher os selects do formulário
     fornecedores = Fornecedor.objects.all()
     categorias = Categoria.objects.all()

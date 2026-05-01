@@ -82,6 +82,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     if (!produtoEncontrado) {
                         alert("Produto não encontrado!");
+                        selectProduto.value = "";
+                        inputPreco.value = "";
                     }
 
                     this.value = '';
@@ -93,19 +95,39 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Função Global para adicionar item
     window.adicionarItem = function () {
+
+        const codigoBipado = inputScan.value.trim();
+
+        if (!selectProduto.value && codigoBipado !== "") {
+        let achou = false;
+        Array.from(selectProduto.options).forEach(option => {
+            const codigoNoBanco = option.getAttribute('data-codigo');
+            if (codigoNoBanco && codigoNoBanco.trim() === codigoBipado) {
+                selectProduto.value = option.value;
+                selectProduto.dispatchEvent(new Event('change'));
+                achou = true;
+            }
+        });
+        
+        if (!achou) {
+            alert("Produto não encontrado pelo código de barras!");
+            return;
+        }
+    }
+
+
         if (!selectProduto || !inputPreco) return;
 
         const option = selectProduto.options[selectProduto.selectedIndex];
-        const produtoId = selectProduto.value;
-        const nomeExibicao = option.text;
-        const unidadeMedida = option.getAttribute('data-unidade');
-        const precoPuro = inputPreco.getAttribute('data-valor-puro');
+    const produtoId = selectProduto.value;
+    const precoPuro = inputPreco.getAttribute('data-valor-puro');
+    const unidadeMedida = option ? option.getAttribute('data-unidade') : '';
+    const nomeExibicao = option ? option.text : '';
 
-        const qtdString = inputQuantidade.value.replace(',', '.');
-        const qtd = parseFloat(qtdString);
+    const qtd = parseFloat(inputQuantidade.value.replace(',', '.'));
 
         if (!produtoId || !precoPuro) {
-            alert("Por favor, selecione um produto primeiro!");
+            alert("Por favor, bipar um produto ou digitar o código!");
             return;
         }
 
@@ -132,8 +154,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         selectProduto.value = "";
         inputPreco.value = "";
+        inputScan.value = "";
         inputQuantidade.value = 1;
         inputQuantidade.step = "1";
+        inputScan.focus();
     };
 
     window.removerItem = function (index) {
@@ -256,6 +280,8 @@ document.addEventListener('DOMContentLoaded', function () {
 }); // 
 
 // --- FUNÇÕES DA CÂMERA 
+let processandoLeitura = false;
+let travaLeituraAtiva = false;
 
 window.alternarCamera = function () {
     const readerDiv = document.getElementById('reader');
@@ -294,10 +320,37 @@ function startScanner() {
         { facingMode: "environment" }, 
         config,
         (decodedText) => {
+            if (processandoLeitura) return;
+
+            processandoLeitura = true;
+
             const inputScan = document.getElementById('input-scan');
-            inputScan.value = decodedText;
-            inputScan.dispatchEvent(new KeyboardEvent('keypress', { key: 'Enter', bubbles: true }));
-            if (navigator.vibrate) navigator.vibrate(100);
+            const inputBarcode = document.getElementById('barcode');
+
+            if (inputScan) {
+                inputScan.value = decodedText;
+                
+                // Em vez de simular o Enter, chama a função de adicionar direto para ser mais robusto
+                if (typeof window.adicionarItem === "function") {
+                    window.adicionarItem();
+                }
+
+                if (navigator.vibrate) navigator.vibrate(100);
+
+                // Libera para o próximo "bip" após 2 segundos
+                setTimeout(() => {
+                    processandoLeitura = false;
+                }, 2000);
+
+            } else if (inputBarcode) {
+                inputBarcode.value = decodedText;
+                if (navigator.vibrate) navigator.vibrate(100);
+
+                // No cadastro, fecha a câmera após ler e reseta a trava
+                window.alternarCamera(); 
+                processandoLeitura = false;
+            }
+       
         }
     ).catch(err => {
         console.error("Erro ao iniciar:", err);

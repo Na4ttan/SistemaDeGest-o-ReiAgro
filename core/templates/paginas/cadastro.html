@@ -20,11 +20,11 @@
             <div class="row g-2 mb-3">
                 <div class="col-6">
                     <label for="cpf" class="form-label">CPF</label>
-                    <input type="text" class="form-control" id="cpf" name="cpf" required>
+                    <input type="number" class="form-control" id="cpf" name="cpf" required>
                 </div>
                 <div class="col-6">
                     <label for="telefone_cliente" class="form-label">Telefone</label>
-                    <input type="text" class="form-control" id="telefone_cliente" name="telefone_cliente">
+                    <input type="number" class="form-control" id="telefone_cliente" name="telefone_cliente">
                 </div>
             </div>
 
@@ -82,11 +82,11 @@
             <div class="row g-2 mb-3">
                 <div class="col-6">
                     <label for="preco_custo" class="form-label">Preço Custo</label>
-                    <input type="text" class="form-control" id="preco_custo" name="preco_custo" placeholder="0.00" required>
+                    <input type="number" class="form-control" id="preco_custo" name="preco_custo" placeholder="0.00" required>
                 </div>
                 <div class="col-6">
                     <label for="preco_venda" class="form-label">Preço Venda</label>
-                    <input type="text" class="form-control" id="preco_venda" name="preco_venda" placeholder="0.00" required>
+                    <input type="number" class="form-control" id="preco_venda" name="preco_venda" placeholder="0.00" required>
                 </div>
             <div class="row g-2 mb-4">
                 <div class="col-6">
@@ -103,16 +103,31 @@
                         <option value="PA">Pacote</option>
                     </select>
                 </div>
-            <div class="row g-2 mb-4">
-                <div class="col-6">
-                    <label for="barcode" class="form-label"> Código de barras </label>
-                    <input type="number" name="barcode" class="form-control" required>
-                </div>
-                <div class="col-6">
-                    <label for="data_validade" class="form-label">Data de Validade</label>
-                    <input type="date" class="form-control" id="data_validade" name="data_validade">
+            <!-- Linha do Código de Barras com Botão de Câmera -->
+            <div class="row g-2 mb-3">
+                <div class="col-12">
+                    <label for="barcode" class="form-label">Código de barras</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-qr-code-scan"></i></span>
+                        <input type="number" id="barcode" name="barcode" class="form-control" required>
+                        
+                        <!-- Botão da Câmera -->
+                        <button class="btn btn-outline-rei" type="button" onclick="alternarCamera()">
+                            <i id="icone-camera" class="bi bi-camera"></i>
+                        </button>
+                    </div>
+                    <!-- Container do vídeo (Scanner) -->
+                    <div id="reader" style="display: none; width: 100%; border-radius: 16px; overflow: hidden; margin-top: 10px;"></div>
                 </div>
             </div>
+
+<!-- Linha de baixo exclusiva para a Data de Validade -->
+<div class="row g-2 mb-4">
+    <div class="col-12">
+        <label for="data_validade" class="form-label">Data de Validade</label>
+        <input type="date" class="form-control" id="data_validade" name="data_validade">
+    </div>
+</div>
 
             <button type="submit" class="btn btn-rei w-100">
                 <i class="bi bi-box-seam me-2"></i>Salvar Produto
@@ -140,7 +155,7 @@
             <div class="row g-2 mb-3">
                 <div class="col-6">
                     <label for="telefone_forn" class="form-label">Telefone</label>
-                    <input type="text" class="form-control" id="telefone_forn" name="telefone_forn">
+                    <input type="number" class="form-control" id="telefone_forn" name="telefone_forn">
                 </div>
                 <div class="col-6">
                     <label for="email_forn" class="form-label">E-mail</label>

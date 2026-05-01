@@ -31,7 +31,7 @@ class Produto(models.Model):
         ('PA', 'Pacote'),
     ]
     nome_produto = models.CharField(max_length=200)
-    codigo_barras = models.CharField(max_length=13, unique=True, verbose_name="Código de Barras")
+    codigo_barras = models.CharField(max_length=13, verbose_name="Código de Barras")
     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
     fornecedor = models.ForeignKey(Fornecedor, on_delete=models.CASCADE)
     preco_custo = models.DecimalField(max_digits=10, decimal_places=2)
