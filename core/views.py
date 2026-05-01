@@ -128,14 +128,19 @@ def cadastro(request):
             telefone = request.POST.get('telefone_cliente')
             email = request.POST.get('email_cliente')
 
-            Cliente.objects.create(
-                nome=nome,
+            Cliente.objects.update_or_create(
                 cpf=cpf,
-                telefone=telefone,
-                email=email
+                defaults={
+                    'nome': nome,
+                    'telefone': telefone,
+                    'email': email
+                }
             )
+            from django.urls import reverse
+
+            url_destino = reverse('home') + f'?cpf_novo={cpf}'
             #podemos pedir uma mensagem de sucesso aqui dps
-            return redirect('cadastro')
+            return redirect(url_destino)
 
         #Cadastro de produto
         elif 'nome_produto' in request.POST:
@@ -192,7 +197,7 @@ def cadastro(request):
             produto.save()
             
             #podemos pedir uma mensagem de sucesso aqui dps
-            return redirect('cadastro')
+            return redirect('paginas/cadastro')
 
         #cadastro de fornecedor
         elif "nome_fantasia" in request.POST:

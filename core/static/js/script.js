@@ -19,6 +19,21 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // --- FUNCIONALIDADE 2: PDV (VENDA) ---
+
+    const inputCpf = document.getElementById('input-cpf');
+    
+    // Função que dispara a busca (refatorada para ser reutilizável)
+    function dispararBuscaCpf() {
+        if (inputCpf.value.length >= 11) {
+            inputCpf.dispatchEvent(new Event('blur'));
+        }
+    }
+
+    if (inputCpf && inputCpf.value !== "") {
+        dispararBuscaCpf();
+    }
+
+
     const selectProduto = document.getElementById('select-produto');
     const inputPreco = document.getElementById('input-preco');
     const inputQuantidade = document.getElementById('input-quantidade');
