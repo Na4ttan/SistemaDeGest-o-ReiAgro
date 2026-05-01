@@ -145,6 +145,7 @@ def cadastro(request):
             preco_custo = request.POST.get('preco_custo').replace(',', '.')
             preco_venda = request.POST.get('preco_venda').replace(',', '.')
             quantia = request.POST.get('quantia')
+            barcode = request.POST.get('barcode')
             if not quantia or quantia.strip() == "":
                 quantia_dedimal = Decimal('0')
             else:
@@ -171,6 +172,7 @@ def cadastro(request):
                 preco_venda=preco_venda,
                 quantidade_estoque=quantia,
                 unidade_medida=unidade_medida,
+                codigo_barras=barcode,
                 data_validade=data_val,
                 defaults = {
                 'preco_custo' : preco_custo,
