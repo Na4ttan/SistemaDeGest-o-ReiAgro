@@ -161,16 +161,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     window.finalizarVenda = function () {
         const formaPagamento = document.getElementById('select-pagamento').value;
-        const clienteSelect = document.getElementById('select-cliente');
-        const clienteNome = clienteSelect.options[clienteSelect.selectedIndex].text;
-
+        const clienteId = document.getElementById('id-cliente-venda').value;
+        
         if (itensVenda.length === 0) {
             alert("Adicione pelo menos um produto!");
             return;
         }
 
         const dadosVenda = {
-            cliente: clienteNome,
+            cliente: clienteId,
             forma_pagamento: formaPagamento,
             itens: itensVenda,
             total_venda : parseFloat(document.getElementById('valor-total-exibicao').innerText.replace('R$', '').replace(',', '.'))
@@ -239,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Evento para calcular enquanto o usuário digita
     inputRecebido.addEventListener('input', calcularTroco);
 
-}); // <--- O FECHAMENTO DO DOMContentLoaded AGORA ESTÁ NO LUGAR CERTO 
+}); // 
 
 // --- FUNÇÕES DA CÂMERA 
 
@@ -301,24 +300,23 @@ function stopScanner() {
     }
 }
 
-// script.js
-
-// script.js
-
 document.getElementById('input-cpf').addEventListener('blur', function() {
     const cpf = this.value;
     const displayNome = document.getElementById('nome-cliente-cpf');
+    const inputIdOculto = document.getElementById('id-cliente-venda');
     
     if (cpf.length >= 11) {
         fetch(`/buscar-cliente-cpf/?cpf=${cpf}`)
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'sucesso') {
-                    document.getElementById('select-cliente').value = data.id;
-    
+                    // Armazena o ID no input oculto e mostra o nome[cite: 5]
+                    inputIdOculto.value = data.id;
                     displayNome.textContent = "Cliente: " + data.nome;
+                    displayNome.className = "form-text text-success fw-bold mt-1";
                     displayNome.style.display = 'block';
                 } else {
+                    inputIdOculto.value = "";
                     displayNome.textContent = "Cliente não encontrado.";
                     displayNome.className = "form-text text-danger mt-1";
                     displayNome.style.display = 'block';
@@ -326,9 +324,11 @@ document.getElementById('input-cpf').addEventListener('blur', function() {
             })
             .catch(error => {
                 console.error('Erro:', error);
+                inputIdOculto.value = "";
                 displayNome.style.display = 'none';
             });
     } else {
+        inputIdOculto.value = "";
         displayNome.style.display = 'none';
     }
 });
