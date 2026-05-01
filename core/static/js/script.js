@@ -300,3 +300,35 @@ function stopScanner() {
             .catch(err => console.error("Erro ao parar câmera:", err));
     }
 }
+
+// script.js
+
+// script.js
+
+document.getElementById('input-cpf').addEventListener('blur', function() {
+    const cpf = this.value;
+    const displayNome = document.getElementById('nome-cliente-cpf');
+    
+    if (cpf.length >= 11) {
+        fetch(`/buscar-cliente-cpf/?cpf=${cpf}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'sucesso') {
+                    document.getElementById('select-cliente').value = data.id;
+    
+                    displayNome.textContent = "Cliente: " + data.nome;
+                    displayNome.style.display = 'block';
+                } else {
+                    displayNome.textContent = "Cliente não encontrado.";
+                    displayNome.className = "form-text text-danger mt-1";
+                    displayNome.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                displayNome.style.display = 'none';
+            });
+    } else {
+        displayNome.style.display = 'none';
+    }
+});

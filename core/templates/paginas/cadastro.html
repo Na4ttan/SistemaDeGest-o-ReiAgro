@@ -8,7 +8,6 @@
     <div class="app-card mb-4">
         <div class="section-head">
             <h3>Cadastrar Cliente</h3>
-            <span class="section-tag">Fidelização</span>
         </div>
 
         <form action="{% url 'cadastro' %}" method="POST">
@@ -21,7 +20,7 @@
             <div class="row g-2 mb-3">
                 <div class="col-6">
                     <label for="cpf" class="form-label">CPF</label>
-                    <input type="text" class="form-control" id="cpf" name="cpf">
+                    <input type="text" class="form-control" id="cpf" name="cpf" required>
                 </div>
                 <div class="col-6">
                     <label for="telefone_cliente" class="form-label">Telefone</label>
@@ -43,7 +42,6 @@
     <div class="app-card mb-4">
         <div class="section-head">
             <h3>Cadastrar Produto</h3>
-            <span class="section-tag">Estoque</span>
         </div>
 
         <form action="{% url 'cadastro' %}" method="POST">
@@ -119,7 +117,6 @@
     <div class="app-card mb-4">
         <div class="section-head">
             <h3>Cadastrar Fornecedor</h3>
-            <span class="section-tag">Suprimentos</span>
         </div>
 
         <form action="{% url 'cadastro' %}" method="POST">

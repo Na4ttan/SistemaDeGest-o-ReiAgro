@@ -17,11 +17,20 @@ def frente_caixa(request):
             itens = data.get('itens')
             cliente_nome = data.get('cliente')
             forma_pagamento = data.get('forma_pagamento')
-            # Captura o total enviado pelo JS (usaremos o nome 'total_venda')
             total_enviado = data.get('total_venda', 0)
 
+            cliente_id = data.get('cliente')
+            if cliente_id:
+                try:
+                    cliente_obj = Cliente.objects.get(id=cliente_id)
+                    nome_para_venda = cliente_obj.nome
+                except (Cliente.DoesNotExist, ValueError):
+                    nome_para_venda = "Consumidor (Venda Geral)"
+            else:
+                nome_para_venda = "Consumidor (Venda Geral)"
+
             nova_venda = Venda.objects.create(
-                cliente=cliente_nome,
+                cliente=nome_para_venda,
                 forma_de_pagamento=forma_pagamento,
                 produto="Múltiplos Itens",
                 quantidade=1,
@@ -64,7 +73,7 @@ def frente_caixa(request):
                 <p class="text-center">Loja 02 - JD. Colina I<br>Fone: 19 989900845</p>
 
                 <p class="text-center">Recibo de Venda</p>
-                <p>Cliente: {cliente_nome}</p>
+                <p>Cliente: {nome_para_venda}</p>
                 <div class="separador"></div>
                 <table>
                     <thead><tr><th>Prod</th><th>Qtd</th><th>Total</th></tr></thead>
@@ -87,7 +96,7 @@ def frente_caixa(request):
             return JsonResponse({
                 'status': 'sucesso', 
                 'mensagem': 'Venda salva!',
-                'recibo_html': recibo_html # Enviamos o HTML pronto para o JS
+                'recibo_html': recibo_html 
             })
         except Exception as e:
             return JsonResponse({'status': 'erro', 'mensagem': str(e)}, status=400)
@@ -95,7 +104,7 @@ def frente_caixa(request):
     # Busca os dados reias para o HTML
     produtos = Produto.objects.all().order_by('data_validade', 'nome_produto')
 
-    # 2. BUSCA TODOS OS CLIENTES (A linha que estava faltando!)
+    # 2. BUSCA TODOS OS CLIENTES 
     clientes = Cliente.objects.all()
 
     # 3. Coloca os clientes no dicionário de contexto
@@ -295,3 +304,12 @@ def fechamento(request):
         # ... outros dados de vendas ...
     }
     return render(request, 'paginas/fechamento.html', context)
+
+@login_required
+def buscar_cliente_cpf(request):
+    cpf = request.GET.get('cpf')
+    try:
+        cliente = Cliente.objects.get(cpf=cpf)
+        return JsonResponse({'status': 'sucesso', 'nome': cliente.nome, 'id': cliente.id})
+    except Cliente.DoesNotExist:
+        return JsonResponse({'status': 'erro', 'mensagem': 'Cliente não encontrado'}, status=404)
