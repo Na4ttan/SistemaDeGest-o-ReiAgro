@@ -220,37 +220,7 @@ def cadastro(request):
 
 @login_required
 def consulta(request):
-    hoje = timezone.now().date()
-    # Filtra produtos da categoria específica
-    # Certifique-se de que o nome no banco seja exatamente este
-    produtos = Produto.objects.filter(categoria__nome_categoria__icontains='Nutrição Animal')
-
-    #inicializa inicializa os contadores
-    dados_grafico = {
-        'vencidos': 0,      # Vermelho
-        'critico': 0,       # laranja (Até 30 dias)
-        'alerta': 0,        # Laranja-vermelho (31-60 dias)
-        'atencao': 0,       # Amarelo (61-90 dias)
-        'seguro': 0         # Verde (> 90 dias)
-    }
-
-    for p in produtos:
-        if not p.data_validade:
-            continue
-
-        dias_para_vencer = (p.data_validade - hoje).days
-
-        if dias_para_vencer < 0:
-            dados_grafico['vencidos'] += 1
-        elif dias_para_vencer <= 30:
-            dados_grafico['critico'] += 1
-        elif dias_para_vencer <= 60:
-            dados_grafico['alerta'] += 1
-        elif dias_para_vencer <= 90:
-            dados_grafico['atencao'] += 1
-        else:
-            dados_grafico['seguro'] += 1
-
+    
     Categorias = Categoria.objects.all()
 
     # Captura os dados do formulário
@@ -282,7 +252,6 @@ def consulta(request):
     consulta_feita = any(request.GET.get(f) for f in filtros)
     
     context = {
-        'dados_grafico': dados_grafico,
         'categorias' : Categorias,
         "produtos_lista" : produtos_lista,
         'consulta_feita' : consulta_feita,
@@ -290,6 +259,45 @@ def consulta(request):
 
 
     return render(request, 'paginas/consulta.html', context)
+
+@login_required
+def relatorios(request):
+    hoje = timezone.now().date()
+    # Filtra produtos da categoria específica
+    # Certifique-se de que o nome no banco seja exatamente este
+    produtos = Produto.objects.filter(categoria__nome_categoria__icontains='Nutrição Animal')
+
+    # inicializa os contadores
+    dados_grafico = {
+        'vencidos': 0,      # Vermelho
+        'critico': 0,       # laranja (Até 30 dias)
+        'alerta': 0,        # Laranja-vermelho (31-60 dias)
+        'atencao': 0,       # Amarelo (61-90 dias)
+        'seguro': 0         # Verde (> 90 dias)
+    }
+
+    for p in produtos:
+        if not p.data_validade:
+            continue
+
+        dias_para_vencer = (p.data_validade - hoje).days
+
+        if dias_para_vencer < 0:
+            dados_grafico['vencidos'] += 1
+        elif dias_para_vencer <= 30:
+            dados_grafico['critico'] += 1
+        elif dias_para_vencer <= 60:
+            dados_grafico['alerta'] += 1
+        elif dias_para_vencer <= 90:
+            dados_grafico['atencao'] += 1
+        else:
+            dados_grafico['seguro'] += 1
+
+    context = {
+        'dados_grafico': dados_grafico,
+    }
+
+    return render(request, 'paginas/relatorios.html', context)
 
 @login_required
 def fechamento(request):

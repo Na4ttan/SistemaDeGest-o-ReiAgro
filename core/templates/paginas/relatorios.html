@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Relarórios{% endblock %}
+
+{% block content %}
+<section id="aba-relatorios">
+    <div class="app-card">
+        <div class="section-head">
+            <h3>Validade: Nutrição Animal</h3>
+            <span class="section-tag">Status Geral</span>
+        </div>
+        <div style="max-height: 300px; display: flex; justify-content: center;">
+            <canvas id="graficoValidade"></canvas>
+        </div>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('graficoValidade').getContext('2d');
+        const data = {
+            labels: ['Vencidos', 'Até 30 dias', '1 a 2 meses', '2 a 3 meses', 'Mais de 3 meses'],
+            datasets: [{
+                data: [
+                    {{ dados_grafico.vencidos }},
+                    {{ dados_grafico.critico }},
+                    {{ dados_grafico.alerta }},
+                    {{ dados_grafico.atencao }},
+                    {{ dados_grafico.seguro }}
+                ],
+                backgroundColor: ['#dc3545', '#FF4500', '#fd7e14', '#ffc107', '#2f6f3e'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        };
+        new Chart(ctx, {
+            type: 'pie',
+            data: data,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 12 }, usePointStyle: true, padding: 20 } }
+                }
+            }
+        });
+    });
+</script>
+</section>
+{% endblock %}

@@ -17,6 +17,11 @@
         <span>Consulta de Estoque</span>
       </a>
 
+      <a href="{% url 'relatorios' %}" class="nav-link {% if request.resolver_match.url_name == 'relatorios' %}active{% endif %}">
+        <i class="bi bi-bar-chart"></i>
+        <span>Relatórios</span>
+      </a>
+
       <a href="{% url 'fechamento' %}" class="nav-link {% if request.resolver_match.url_name == 'fechamento' %}active{% endif %}">
         <i class="bi bi-cash-coin"></i>
         <span>Fechamento de Caixa</span>
