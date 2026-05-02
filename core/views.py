@@ -7,6 +7,7 @@ from datetime import timedelta
 from .models import Cliente, Fornecedor, Produto, Categoria, Venda, ItensVenda, FechamentoCaixa, Sangria
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 # Create your views here.
 
 
@@ -337,10 +338,16 @@ def relatorios(request):
         data_validade__lte=trinta_dias
     ).order_by('data_validade')
 
+    produtos_baixo_estoque = produtos_nutricao.filter(
+        Q(unidade_medida='KG', quantidade_estoque__lt=15) | 
+        Q(unidade_medida__in=['UN', 'PA', 'LT', 'MT'], quantidade_estoque__lt=5)
+    ).order_by('quantidade_estoque')
+
     context = {
         'dados_grafico': dados_grafico,
         'produtos_vencidos': produtos_vencidos,
         'produtos_proximos': produtos_proximos,
+        'produtos_baixo_estoque': produtos_baixo_estoque,
     }
     return render(request, 'paginas/relatorios.html', context)
 
