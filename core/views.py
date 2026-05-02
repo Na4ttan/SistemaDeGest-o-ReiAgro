@@ -298,7 +298,10 @@ def relatorios(request):
     hoje = timezone.now().date()
     # Filtra produtos da categoria específica
     # Certifique-se de que o nome no banco seja exatamente este
-    produtos = Produto.objects.filter(categoria__nome_categoria__icontains='Nutrição Animal')
+    produtos_nutricao = Produto.objects.filter(
+        categoria__nome_categoria__icontains='Nutrição Animal',
+        quantidade_estoque__gt=0  # Filtra apenas estoque maior que zero[cite: 12]
+    )
 
     # inicializa os contadores
     dados_grafico = {
@@ -309,7 +312,7 @@ def relatorios(request):
         'seguro': 0         # Verde (> 90 dias)
     }
 
-    for p in produtos:
+    for p in produtos_nutricao:
         if not p.data_validade:
             continue
 
@@ -326,10 +329,12 @@ def relatorios(request):
         else:
             dados_grafico['seguro'] += 1
 
+    produtos_vencidos = produtos_nutricao.filter(data_validade__lt=hoje).order_by('data_validade')
+
     context = {
         'dados_grafico': dados_grafico,
+        'produtos_vencidos': produtos_vencidos,
     }
-
     return render(request, 'paginas/relatorios.html', context)
 
 @login_required

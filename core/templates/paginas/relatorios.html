@@ -16,12 +16,37 @@
 
     <div class="app-card">
         <div class="section-head">
-            <h3>Relatório B</h3>
-            <span class="section-tag">Status Geral</span>
+            <h3>Produtos vencidos</h3>
+            <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="collapse" data-bs-target="#listaVencidos">
+            <i class="bi bi-exclamation-triangle me-1"></i> Ver Vencidos
+        </button>
         </div>
-        <div>
-            <p>funcionalidade de clicar e gerar uma lista de produtos vencidos</p>
+        <div class="collapse mt-3" id="listaVencidos">
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr class="small text-muted">
+                        <th>Produto</th>
+                        <th>Vencimento</th>
+                        <th>Estoque</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in produtos_vencidos %}
+                    <tr>
+                        <td><strong>{{ p.nome_produto }}</strong></td>
+                        <td class="text-danger">{{ p.data_validade|date:"d/m/Y" }}</td>
+                        <td>{{ p.quantidade_estoque|floatformat:"-3" }} {{ p.unidade_medida }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center py-3 text-muted">Nenhum produto vencido com estoque.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
+    </div>
     </div>
 
     <div class="app-card">
