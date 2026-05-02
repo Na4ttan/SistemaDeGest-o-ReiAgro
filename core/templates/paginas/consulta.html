@@ -84,7 +84,7 @@
                             <td>R$ {{ prod.preco_venda }}</td>
                             <td>
                                 <span class="status {% if prod.quantidade_estoque <= 0 %}zero{% elif prod.quantidade_estoque < 10 %}low{% else %}ok{% endif %}">
-                                    {{ prod.quantidade_estoque }} {{ prod.unidade_medida }}
+                                    {{ prod.quantidade_estoque|floatformat:"-3" }} {{ prod.unidade_medida }}
                                 </span>
                             </td>
                         </tr>
