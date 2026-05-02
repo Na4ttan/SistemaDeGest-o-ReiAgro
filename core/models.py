@@ -41,6 +41,24 @@ class Produto(models.Model):
         max_length=2, choices=UNIDADES_CHOICES, default='UN')
     data_validade = models.DateField(blank=True, null=True, verbose_name="Data de Validade")
 
+    produto_pai = models.ForeignKey(
+        'self', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='filhos_granel',
+        verbose_name="Pacote de Origem",
+        help_text="Se for um item a granel, selecione o pacote original."
+    )
+    
+    fator_conversao = models.DecimalField(
+        max_digits=10, 
+        decimal_places=3, 
+        default=1.000,
+        verbose_name="Fator de Conversão",
+        help_text="Ex: Se um pacote tem 15kg, o fator é 15.000"
+    )
+
     def __str__(self):
         return self.nome_produto
 

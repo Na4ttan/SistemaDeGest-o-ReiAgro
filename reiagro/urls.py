@@ -29,6 +29,7 @@ urlpatterns = [
     path('frente-caixa/', views.frente_caixa, name='frente_caixa'),
     path('buscar-cliente-cpf/', views.buscar_cliente_cpf, name='buscar_cliente_cpf'),
     path('relatorios/', views.relatorios, name='relatorios'),
+    path('desmembrar/<int:produto_id>/', views.desmembrar_produto, name='desmembrar_produto'),
 ]
 
 

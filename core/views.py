@@ -1,10 +1,11 @@
 from decimal import Decimal
 import json
 from django.http import JsonResponse, request
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from datetime import timedelta
 from .models import Cliente, Fornecedor, Produto, Categoria, Venda, ItensVenda, FechamentoCaixa, Sangria
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 # Create your views here.
 
@@ -144,49 +145,83 @@ def cadastro(request):
 
         # --- Cadastro de produto ---
         elif 'nome_produto' in request.POST:
+            # 1. Captura de dados comuns
             nome_produto = request.POST.get('nome_produto')
-            preco_custo = request.POST.get('preco_custo').replace(',', '.')
-            preco_venda = request.POST.get('preco_venda').replace(',', '.')
-            quantia = request.POST.get('quantia')
             barcode = request.POST.get('barcode')
-            unidade_medida = request.POST.get('unidade_medida')
             data_val = request.POST.get('data_validade') or None
             id_cat = request.POST.get('id_categoria')
             id_forn = request.POST.get('id_fornecedor')
+            
+            # 2. Lógica para diferenciar os formulários
+            is_granel = request.POST.get('venda_granel_especifica') == 'true'
 
-            # CORREÇÃO AQUI: Nome da variável corrigido para 'quantia_decimal' (com C)
+            if is_granel:
+                # Se for ração, o preço de venda vem do campo 'preco_venda_saco'
+                preco_v = request.POST.get('preco_venda_saco').replace(',', '.')
+                preco_c = request.POST.get('preco_custo', '0').replace(',', '.') 
+                
+                # Pega o peso (ex: 15) e transforma em fator de conversão (15000)
+                peso_informado = request.POST.get('peso_pacote').replace(',', '.')
+                fator_decimal = Decimal(peso_informado) * Decimal('1000.000')
+                
+                unidade_medida = 'PA' # Força ser Pacote
+                quantia = request.POST.get('quantia')
+            else:
+                # Lógica original para produtos normais
+                preco_c = request.POST.get('preco_custo').replace(',', '.')
+                preco_v = request.POST.get('preco_venda').replace(',', '.')
+                unidade_medida = request.POST.get('unidade_medida')
+                quantia = request.POST.get('quantia')
+                fator_decimal = Decimal('1.000')
+
+            # 3. Conversão de valores para Decimal
+            preco_custo_decimal = Decimal(preco_c)
+            preco_venda_decimal = Decimal(preco_v)
+            
             if not quantia or quantia.strip() == "":
-                quantia_decimal = Decimal('0')
+                quantia_decimal = Decimal('0.000')
             else:
                 quantia_decimal = Decimal(quantia.replace(',', '.'))
 
-            # Busca instâncias reais
+            # 4. Busca instâncias de Categoria e Fornecedor
             categoria_instancia = Categoria.objects.get(id=id_cat)
             fornecedor_instancia = Fornecedor.objects.get(id=id_forn)
 
-            # Criando ou atualizando o produto
-            produto, criado = Produto.objects.update_or_create(
+            # 5. GARANTIR A EXISTÊNCIA DO PRODUTO (Sem erro de variável local)
+            # Criamos com estoque zero para não violar a restrição de NOT NULL
+            produto, criado = Produto.objects.get_or_create(
                 codigo_barras=barcode,
                 data_validade=data_val,
                 defaults={
                     'nome_produto': nome_produto,
                     'categoria': categoria_instancia,
                     'fornecedor': fornecedor_instancia,
-                    'preco_custo': Decimal(preco_custo),
-                    'preco_venda': Decimal(preco_venda),
+                    'preco_custo': preco_custo_decimal,
+                    'preco_venda': preco_venda_decimal,
                     'unidade_medida': unidade_medida,
+                    'fator_conversao': fator_decimal,
+                    'quantidade_estoque': Decimal('0.000')
                 }
             )
 
-            # Lógica de estoque
-            if criado:
-                produto.quantidade_estoque = quantia_decimal
-            else:
+            # 6. ATUALIZAÇÃO FINAL DOS DADOS E ESTOQUE
+            if not criado:
+                # Se o produto já existia, atualizamos os preços e somamos o estoque
+                produto.nome_produto = nome_produto
+                produto.categoria = categoria_instancia
+                produto.fornecedor = fornecedor_instancia
+                produto.preco_custo = preco_custo_decimal
+                produto.preco_venda = preco_venda_decimal
+                produto.unidade_medida = unidade_medida
+                produto.fator_conversao = fator_decimal
                 produto.quantidade_estoque += quantia_decimal
+            else:
+                # Se for novo, apenas definimos a quantidade vinda do formulário
+                produto.quantidade_estoque = quantia_decimal
 
             produto.save()
             return redirect('cadastro')
-
+        
         #cadastro de fornecedor
         elif "nome_fantasia" in request.POST:
             nome_fantasia = request.POST.get('nome_fantasia')
@@ -206,10 +241,12 @@ def cadastro(request):
     #busca os dados reais para preencher os selects do formulário
     fornecedores = Fornecedor.objects.all()
     categorias = Categoria.objects.all()
+    todos_produtos = Produto.objects.filter(unidade_medida='PA')
 
     context = {
     'fornecedores':fornecedores,
     'categorias': categorias,
+    'todos_produtos': todos_produtos,
     }
             
     return render(request, 'paginas/cadastro.html', context)
@@ -317,3 +354,31 @@ def buscar_cliente_cpf(request):
         return JsonResponse({'status': 'sucesso', 'nome': cliente.nome, 'id': cliente.id})
     except Cliente.DoesNotExist:
         return JsonResponse({'status': 'erro', 'mensagem': 'Cliente não encontrado'}, status=404)
+
+
+@login_required
+def desmembrar_produto(request, produto_id):
+    # O produto_id aqui deve ser o do produto GRANEL (o que recebe o estoque)
+    produto_granel = get_object_or_404(Produto, id=produto_id)
+    
+    if not producto_granel.produto_pai:
+        messages.error(request, "Este produto não possui um pacote vinculado para desmembramento.")
+        return redirect('consulta')
+
+    produto_pacote = producto_granel.produto_pai
+
+    if producto_pacote.quantidade_estoque >= 1:
+        # 1. Diminui 1 unidade do pacote fechado
+        producto_pacote.quantidade_estoque -= 1
+        producto_pacote.save()
+
+        # 2. Aumenta o estoque do granel com base no fator de conversão
+        # Ex: Se o fator for 15, adiciona 15kg ao estoque granel
+        producto_granel.quantidade_estoque += producto_granel.fator_conversao
+        producto_granel.save()
+
+        messages.success(request, f"Sucesso! 1 unidade de {producto_pacote.nome} foi convertida em {producto_granel.fator_conversao} {producto_granel.forma_medida}.")
+    else:
+        messages.error(request, f"Estoque insuficiente de {producto_pacote.nome} para desmembrar.")
+
+    return redirect('estoque')
