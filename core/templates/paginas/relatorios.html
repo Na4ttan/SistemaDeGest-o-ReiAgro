@@ -107,12 +107,14 @@
                     {% for p in produtos_baixo_estoque %}
                     <tr>
                         <td><strong>{{ p.nome_produto }}</strong></td>
-                        <td class="text-primary fw-bold">{{ p.quantidade_estoque|floatformat:"-3" }}</td>
-                        <td><span class="badge bg-light text-dark">{{ p.get_unidade_med_display }}</span></td>
+                        <!-- Exibe o número formatado seguido da unidade de medida (KG, UN, etc)[cite: 11, 14] -->
+                        <td class="text-primary fw-bold">
+                            {{ p.quantidade_estoque|floatformat:"-3" }} {{ p.unidade_medida }}
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="3" class="text-center py-3 text-muted">Todos os itens estão com níveis adequados.</td>
+                        <td colspan="2" class="text-center py-3 text-muted">Todos os itens estão com níveis adequados.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
