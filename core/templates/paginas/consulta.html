@@ -23,7 +23,7 @@
             </div>
 
             <div class="col-6">
-                <label class="form-label small text-muted">Unidade</label>
+                <label class="form-label small text-muted">Forma de medida</label>
                 <select name="unidade_medida" class="form-select">
                     <option value="">Todas</option>
                     <option value="KG" {% if request.GET.unidade_medida == "KG" %}selected{% endif %}>Quilograma</option>
@@ -38,8 +38,8 @@
                 <label class="form-label small text-muted">Buscar por</label>
                 <select name="tipo_filtro" class="form-select">
                     <option value="nome_produto" {% if request.GET.tipo_filtro == "nome_produto" %}selected{% endif %}>Nome</option>
-                    <option value="id" {% if request.GET.tipo_filtro == "id" %}selected{% endif %}>ID</option>
-                    <option value="preco_venda" {% if request.GET.tipo_filtro == "preco_venda" %}selected{% endif %}>Preço Min.</option>
+                    <option value="codigo_barras" {% if request.GET.tipo_filtro == "codigo_barras" %}selected{% endif %}>Cód. Barras</option>
+                    <option value="fornecedor" {% if request.GET.tipo_filtro == "fornecedor" %}selected{% endif %}>Fornecedor</option>
                 </select>
             </div>
 

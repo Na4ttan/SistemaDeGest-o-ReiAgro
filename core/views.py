@@ -221,7 +221,7 @@ def cadastro(request):
 
             produto.save()
             return redirect('cadastro')
-        
+
         #cadastro de fornecedor
         elif "nome_fantasia" in request.POST:
             nome_fantasia = request.POST.get('nome_fantasia')
@@ -273,13 +273,13 @@ def consulta(request):
 
     # Filtra pelo Atributo escolhido
     if valor_busca:
-        if tipo_filtro == 'id':
-            produtos_lista = produtos_lista.filter(id=valor_busca)
+        if tipo_filtro == 'codigo_barras':
+            produtos_lista = produtos_lista.filter(codigo_barras__icontains=valor_busca)
         elif tipo_filtro == 'nome_produto':
             produtos_lista = produtos_lista.filter(nome_produto__icontains=valor_busca)
-        elif tipo_filtro == 'preco_venda':
-            produtos_lista = produtos_lista.filter(preco_venda__gte=valor_busca)
-    
+        elif tipo_filtro == 'fornecedor':
+            produtos_lista = produtos_lista.filter(fornecedor__nome_fantasia__icontains=valor_busca)
+        
 
     filtros = ['categoria', 'unidade_medida', 'valor_busca', 'tipo_filtro']
     consulta_feita = any(request.GET.get(f) for f in filtros)
