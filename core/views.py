@@ -296,6 +296,7 @@ def consulta(request):
 @login_required
 def relatorios(request):
     hoje = timezone.now().date()
+    trinta_dias = hoje + timedelta(days=30) # Define o intervalo de 1 mês[cite: 12]
     # Filtra produtos da categoria específica
     # Certifique-se de que o nome no banco seja exatamente este
     produtos_nutricao = Produto.objects.filter(
@@ -331,9 +332,15 @@ def relatorios(request):
 
     produtos_vencidos = produtos_nutricao.filter(data_validade__lt=hoje).order_by('data_validade')
 
+    produtos_proximos = produtos_nutricao.filter(
+        data_validade__gte=hoje, 
+        data_validade__lte=trinta_dias
+    ).order_by('data_validade')
+
     context = {
         'dados_grafico': dados_grafico,
         'produtos_vencidos': produtos_vencidos,
+        'produtos_proximos': produtos_proximos,
     }
     return render(request, 'paginas/relatorios.html', context)
 
