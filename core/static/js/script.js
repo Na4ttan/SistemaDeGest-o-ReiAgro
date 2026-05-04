@@ -226,13 +226,15 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(data => {
             if (data.status === 'sucesso') {
                 alert("Venda realizada com sucesso!");
-                const janelaRecibo = window.open('', '_blank');
-                janelaRecibo.document.write(data.recibo_html);
-                janelaRecibo.document.close();
-                janelaRecibo.print();
-                location.reload();
+                itensVenda = [];
+                atualizarResumo();
+                document.getElementById('valor-total-exibicao').textContent = "R$ 0,00";
+                document.getElementById('input-cpf').value = "";
+                document.getElementById('nome-cliente-cpf').style.display = 'none';
+
+                // 2. IMPORTANTE: Não chame mais window.print() ou funções que abrem o recibo.
             } else {
-                alert("Erro ao salvar: " + data.mensagem);
+                alert('Erro ao finalizar venda: ' + data.mensagem);
             }
         });
     };

@@ -8,6 +8,8 @@ from .models import Cliente, Fornecedor, Produto, Categoria, Venda, ItensVenda, 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
 # Create your views here.
 
 
@@ -73,7 +75,6 @@ def frente_caixa(request):
             <body>
                 <h2 class="text-center">REI AGRO</h2>
                 <p class="text-center">Loja 02 - JD. Colina I<br>Fone: 19 989900845</p>
-
                 <p class="text-center">Recibo de Venda</p>
                 <p>Cliente: {nome_para_venda}</p>
                 <div class="separador"></div>
@@ -94,6 +95,31 @@ def frente_caixa(request):
             </body>
             </html>
             """
+            # === NOVA FUNCIONALIDADE: ENVIO DE EMAIL ===
+            try:
+                # Verificamos se existe um objeto de cliente e se ele tem e-mail
+                if 'cliente_obj' in locals() and cliente_obj.email:
+                    email_venda = EmailMessage(
+                        subject=f'Recibo de Venda - Rei Agro - Pedido #{nova_venda.id}',
+                        body=recibo_html,
+                        from_email=None,  # Usa o DEFAULT_FROM_EMAIL do settings.py
+                        to=[cliente_obj.email],
+                    )
+                    email_venda.content_subtype = "html"
+                    email_venda.send()
+            except Exception as mail_error:
+                # Isso evita que a venda seja cancelada por um erro de rede
+                print(f"Erro ao enviar recibo por e-mail: {mail_error}")
+
+            # Retorno para o script.js
+            return JsonResponse({
+                'status': 'sucesso', 
+                'mensagem': 'Venda salva com sucesso!',
+                'recibo_html': recibo_html 
+            })
+
+        except Exception as e:
+            return JsonResponse({'status': 'erro', 'mensagem': str(e)}, status=400)
 
             return JsonResponse({
                 'status': 'sucesso', 
