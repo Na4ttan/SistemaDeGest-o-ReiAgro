@@ -100,7 +100,7 @@ def frente_caixa(request):
                 # Verificamos se existe um objeto de cliente e se ele tem e-mail
                 if 'cliente_obj' in locals() and cliente_obj.email:
                     email_venda = EmailMessage(
-                        subject=f'Recibo de Venda - Rei Agro - Pedido #{nova_venda.id}',
+                        subject=f'Recibo de Compra - Rei Agro - Pedido #{nova_venda.id}',
                         body=recibo_html,
                         from_email=None,  # Usa o DEFAULT_FROM_EMAIL do settings.py
                         to=[cliente_obj.email],
