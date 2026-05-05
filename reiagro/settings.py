@@ -137,5 +137,5 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'reiagro6@gmail.com'
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD') // antiga senha foi trocada
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD') # antiga senha foi trocada
 DEFAULT_FROM_EMAIL = 'Rei Agro <reiagro6@gmail.com>'
