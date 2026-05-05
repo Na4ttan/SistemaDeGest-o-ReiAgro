@@ -2,6 +2,7 @@ from decimal import Decimal
 import json
 from django.http import JsonResponse, request
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Sum
 from django.utils import timezone
 from datetime import timedelta
 from .models import Cliente, Fornecedor, Produto, Categoria, Venda, ItensVenda, FechamentoCaixa, Sangria
@@ -143,6 +144,15 @@ def frente_caixa(request):
 
     return render(request, 'paginas/index.html', context)
 
+
+@login_required
+def buscar_cliente_cpf(request):
+    cpf = request.GET.get('cpf')
+    try:
+        cliente = Cliente.objects.get(cpf=cpf)
+        return JsonResponse({'status': 'sucesso', 'nome': cliente.nome, 'id': cliente.id})
+    except Cliente.DoesNotExist:
+        return JsonResponse({'status': 'erro', 'mensagem': 'Cliente não encontrado'}, status=404)
 
 @login_required
 def cadastro(request):
@@ -379,26 +389,60 @@ def relatorios(request):
 
 @login_required
 def fechamento(request):
-    # Busca o último fechamento realizado no banco de dados
-    ultimo_fechamento = FechamentoCaixa.objects.order_by('-data_criacao').first()
+    hoje = timezone.now().date()
     
-    # Se existir um fechamento anterior, pegamos o valor que foi deixado
+    # Busca vendas do dia
+    vendas_dia = Venda.objects.filter(data_venda__date=hoje)
+
+    # Agrupa valores por forma de pagamento
+    resumo_pagamentos = {
+        'Dinheiro': vendas_dia.filter(forma_de_pagamento='Dinheiro').aggregate(Sum('valorTotal'))['valorTotal__sum'] or 0,
+        'PIX': vendas_dia.filter(forma_de_pagamento='PIX').aggregate(Sum('valorTotal'))['valorTotal__sum'] or 0,
+        'Crédito': vendas_dia.filter(forma_de_pagamento='Crédito').aggregate(Sum('valorTotal'))['valorTotal__sum'] or 0,
+        'Débito': vendas_dia.filter(forma_de_pagamento='Débito').aggregate(Sum('valorTotal'))['valorTotal__sum'] or 0,
+    }
+
+    total_vendido = sum(resumo_pagamentos.values())
+    
+    # Busca fundo de abertura anterior (seu código existente)
+    ultimo_fechamento = FechamentoCaixa.objects.order_by('-data_criacao').first()
     fundo_abertura_anterior = ultimo_fechamento.fundo_reserva_proximo_dia if ultimo_fechamento else 0
     
     context = {
+        'resumo': resumo_pagamentos,
+        'total_vendido': total_vendido,
+        'vendas_dinheiro': resumo_pagamentos['Dinheiro'],
         'fundo_abertura_anterior': fundo_abertura_anterior,
-        # ... outros dados de vendas ...
     }
     return render(request, 'paginas/fechamento.html', context)
 
 @login_required
-def buscar_cliente_cpf(request):
-    cpf = request.GET.get('cpf')
-    try:
-        cliente = Cliente.objects.get(cpf=cpf)
-        return JsonResponse({'status': 'sucesso', 'nome': cliente.nome, 'id': cliente.id})
-    except Cliente.DoesNotExist:
-        return JsonResponse({'status': 'erro', 'mensagem': 'Cliente não encontrado'}, status=404)
+def processar_fechamento(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            
+            fechamento = FechamentoCaixa.objects.create(
+                operador=request.user,
+                vendas_dinheiro_sistema=Decimal(str(data.get('vendas_sistema'))),
+                dinheiro_em_caixa=Decimal(str(data.get('total_em_caixa'))),
+                fundo_reserva_proximo_dia=Decimal(str(data.get('fundo_caixa'))),
+                valor_recolhido=Decimal(str(data.get('recolhimento'))),
+            )
+
+            sangrias_enviadas = data.get('sangrias', [])
+            for s in sangrias_enviadas:
+                Sangria.objects.create(
+                    fechamento=fechamento,
+                    motivo=s['motivo'],
+                    valor=Decimal(str(s['valor']))
+                )
+
+            return JsonResponse({'status': 'sucesso', 'mensagem': 'Caixa fechado com sucesso!'})
+        except Exception as e:
+            return JsonResponse({'status': 'erro', 'mensagem': str(e)}, status=400)
+    
+    return JsonResponse({'status': 'erro', 'mensagem': 'Método inválido'}, status=405)
 
 
 @login_required

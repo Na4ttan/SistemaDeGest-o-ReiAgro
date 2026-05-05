@@ -112,8 +112,6 @@ class FechamentoCaixa(models.Model):
     # Destino do Dinheiro
     fundo_reserva_proximo_dia = models.DecimalField(max_digits=10, decimal_places=2)
     valor_recolhido = models.DecimalField(max_digits=10, decimal_places=2)
-    
-    observacoes = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"Fechamento {self.data_criacao.strftime('%d/%m/%Y')} - {self.operador}"

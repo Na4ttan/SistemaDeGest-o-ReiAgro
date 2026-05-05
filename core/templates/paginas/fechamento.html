@@ -16,25 +16,25 @@
             <tbody>
                 <tr>
                     <td>Dinheiro</td>
-                    <td>200</td>
+                    <td>R$ {{ resumo.Dinheiro|floatformat:2 }}</td>
                 </tr>
                 <tr>
                     <td>PIX</td>
-                    <td>1900</td>
+                    <td>R$ {{ resumo.PIX|floatformat:2 }}</td>
                 </tr>
                 <tr>
                     <td>Crédito</td>
-                    <td>200</td>
+                    <td>R$ {{ resumo.Crédito|floatformat:2 }}</td>
                 </tr>
                 <tr>
                     <td>Débito</td>
-                    <td>300</td>
+                    <td>R$ {{ resumo.Débito|floatformat:2 }}</td>
                 </tr>
             </tbody>
             <tfoot>
                 <tr class="fw-bold">
                     <td>Total vendido</td>
-                    <td>2600</td>
+                    <td>R$ {{ total_vendido|floatformat:2 }}</td>
                 </tr>
             </tfoot>
         </table>
@@ -79,7 +79,7 @@
         <tbody id="corpo-tabela-dinamica">
             <tr>
                 <td>Vendas em Dinheiro (Hoje)</td>
-                <td class="text-end" id="resumo-vendas">200,00</td>
+                <td class="text-end" id="resumo-vendas">{{ vendas_dinheiro|floatformat:2 }}</td>
             </tr>
             <tr class="text-muted italic">
                 <td>(+) Fundo de Abertura (Ontem)</td>
@@ -120,18 +120,23 @@
 </div>
 
     <div class="app-card">
-        <label class="form-label">Observações</label>
-        <textarea class="form-control" rows="4"></textarea>
-        <button class="btn btn-rei w-100 mt-3">Fechar caixa</button>
+        <button id="btn-finalizar-fechamento" class="btn btn-rei w-100 mt-3">Fechar caixa</button>
     </div>
 
     <script>
-    let vendasDinheiro = 200.00; // Valor que vem do seu backend
+    const fundoAbertura = parseFloat("{{ fundo_abertura_anterior|safe }}".replace(',', '.'));
+    let vendasDinheiro = parseFloat("{{ vendas_dinheiro|safe }}".replace(',', '.'));
     let totalSangrias = 0;
+    let listaSangrias = [];
+
+    document.addEventListener('DOMContentLoaded', function() {
+        atualizarTotais();
+    });
 
     function adicionarSangria() {
-        const motivo = document.getElementById('sangria_motivo').value;
+        const motivoInput = document.getElementById('sangria_motivo');
         const valorInput = document.getElementById('sangria_valor');
+        const motivo = motivoInput.value;
         const valor = parseFloat(valorInput.value);
 
         if (!motivo || isNaN(valor)) {
@@ -139,7 +144,8 @@
             return;
         }
 
-        // 1. Adiciona a linha na tabela dinâmica
+        listaSangrias.push({ motivo: motivo, valor: valor });
+
         const tabela = document.getElementById('corpo-tabela-dinamica');
         const novaLinha = `
             <tr class="text-danger small">
@@ -149,32 +155,60 @@
         `;
         tabela.innerHTML += novaLinha;
 
-        // 2. Atualiza os cálculos
         totalSangrias += valor;
         atualizarTotais();
 
-        // 3. Limpa os campos
-        document.getElementById('sangria_motivo').value = '';
+        motivoInput.value = '';
         valorInput.value = '';
     }
 
     function atualizarTotais() {
-        const totalAtual = vendasDinheiro - totalSangrias;
-        const fundoCaixa = parseFloat(document.getElementById('fundo_de_caixa').value) || 0;
+        const totalAtual = (vendasDinheiro + fundoAbertura) - totalSangrias;
+        const fundoCaixaProximaAbertura = parseFloat(document.getElementById('fundo_de_caixa').value) || 0;
         
-        // Atualiza o "Total em Caixa" na tabela
-        document.getElementById('total-em-caixa').innerText = totalAtual.toFixed(2);
+        document.getElementById('total-em-caixa').innerText = totalAtual.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
         
-        // Atualiza o "Recolhimento de Caixa" (Total - Fundo de Abertura)
-        const recolhimento = totalAtual - fundoCaixa;
-        document.querySelector('.h4.text-primary').innerText = `R$ ${recolhimento.toFixed(2)}`;
+        const recolhimento = totalAtual - fundoCaixaProximaAbertura;
+        document.querySelector('.h4.text-primary').innerText = `R$ ${recolhimento.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
     }
 
-    // Vincula o botão de adicionar
     document.querySelector('.btn-outline-danger').addEventListener('click', adicionarSangria);
-    
-    // Vincula o campo de fundo de caixa para atualizar o recolhimento em tempo real
     document.getElementById('fundo_de_caixa').addEventListener('input', atualizarTotais);
+
+    document.getElementById('btn-finalizar-fechamento').addEventListener('click', function() {
+        // Captura o valor do recolhimento limpando os símbolos de moeda
+        const recolhimentoTexto = document.querySelector('.h4.text-primary').innerText;
+        const recolhimentoLimpo = parseFloat(recolhimentoTexto.replace('R$', '').replace('.', '').replace(',', '.').trim());
+
+        const dadosFechamento = {
+            vendas_sistema: vendasDinheiro,
+            total_em_caixa: (vendasDinheiro + fundoAbertura) - totalSangrias,
+            fundo_caixa: parseFloat(document.getElementById('fundo_de_caixa').value) || 0,
+            recolhimento: recolhimentoLimpo,
+            observacoes: "", // Você pode adicionar um campo de texto no HTML e capturar aqui
+            sangrias: listaSangrias 
+        };
+
+        if (!confirm("Deseja realmente encerrar o caixa agora?")) return;
+
+        fetch('/processar-fechamento/', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify(dadosFechamento)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                alert(data.mensagem);
+                window.location.href = '/relatorios/'; 
+            } else {
+                alert("Erro: " + data.mensagem);
+            }
+        });
+    });
 </script>
 </section>
 {% endblock %}

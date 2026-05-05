@@ -26,6 +26,7 @@ urlpatterns = [
     path('cadastro/', views.cadastro, name='cadastro'),
     path('consulta/', views.consulta, name='consulta'),
     path('fechamento/', views.fechamento, name='fechamento'),
+    path('processar-fechamento/', views.processar_fechamento, name='processar_fechamento'),
     path('frente-caixa/', views.frente_caixa, name='frente_caixa'),
     path('buscar-cliente-cpf/', views.buscar_cliente_cpf, name='buscar_cliente_cpf'),
     path('relatorios/', views.relatorios, name='relatorios'),
