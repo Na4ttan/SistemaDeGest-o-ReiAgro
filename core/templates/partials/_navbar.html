@@ -22,6 +22,11 @@
         <span>Relatórios</span>
       </a>
 
+      <a href="{% url 'operacao' %}" class="nav-link {% if request.resolver_match.url_name == 'operacao' %}active{% endif %}">
+        <i class="bi bi-scissors"></i>
+        <span>Operação</span>
+      </a>
+
       <a href="{% url 'fechamento' %}" class="nav-link {% if request.resolver_match.url_name == 'fechamento' %}active{% endif %}">
         <i class="bi bi-cash-coin"></i>
         <span>Fechamento de Caixa</span>

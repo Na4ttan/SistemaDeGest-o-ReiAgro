@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Operação - Rei Agro{% endblock %}
+
+{% block content %}
+<section id="aba-operacao">
+    <div class="app-card mt-3">
+        <div class="section-head">
+            <h3>Operação de Desmembramento</h3>
+            <p class="text-muted small">Informe o peso e transforme pacotes em quilos.</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="table-responsive mt-3">
+            <table class="table align-middle">
+                <thead>
+                    <tr class="small text-muted">
+                        <th>Pacote (Origem)</th>
+                        <th>Estoque Atual</th>
+                        <th>Peso do Pacote (KG)</th>
+                        <th class="text-center">Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in pacotes %}
+                    <tr>
+                        <td>
+                            <strong>{{ p.nome_produto }}</strong><br>
+                            <small class="text-muted">{{ p.categoria.nome_categoria }}</small>
+                        </td>
+                        <td>
+                            <span class="status {% if p.quantidade_estoque <= 0 %}zero{% elif p.quantidade_estoque < 5 %}low{% else %}ok{% endif %}">
+                                {{ p.quantidade_estoque|floatformat:0 }} {{ p.unidade_medida }}
+                            </span>
+                        </td>
+                        <form method="POST" action="{% url 'confirmar_desmembramento' p.id %}">
+                            {% csrf_token %}
+                            <td>
+                                <div class="input-group input-group-sm" style="max-width: 120px;">
+                                    <input type="text" name="peso_manual" class="form-control" placeholder="Ex: 20" required>
+                                    <span class="input-group-text">kg</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <button type="submit" class="btn btn-rei btn-sm {% if p.quantidade_estoque <= 0 %}disabled{% endif %}"
+                                        onclick="return confirm('Confirmar desmembramento de 1 pacote?')">
+                                    <i class="bi bi-scissors me-1"></i> Desmembrar
+                                </button>
+                            </td>
+                        </form>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">Nenhum pacote de Nutrição Animal encontrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

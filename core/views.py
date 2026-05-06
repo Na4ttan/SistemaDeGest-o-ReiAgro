@@ -182,14 +182,14 @@ def cadastro(request):
 
         # --- Cadastro de produto ---
         elif 'nome_produto' in request.POST:
-            # 1. Captura de dados comuns
+            # Captura de dados comuns
             nome_produto = request.POST.get('nome_produto')
             barcode = request.POST.get('barcode')
             data_val = request.POST.get('data_validade') or None
             id_cat = request.POST.get('id_categoria')
             id_forn = request.POST.get('id_fornecedor')
             
-            # 2. Lógica para diferenciar os formulários
+            # Lógica para diferenciar os formulários
             is_granel = request.POST.get('venda_granel_especifica') == 'true'
 
             if is_granel:
@@ -211,7 +211,7 @@ def cadastro(request):
                 quantia = request.POST.get('quantia')
                 fator_decimal = Decimal('1.000')
 
-            # 3. Conversão de valores para Decimal
+            # Conversão de valores para Decimal
             preco_custo_decimal = Decimal(preco_c)
             preco_venda_decimal = Decimal(preco_v)
             
@@ -220,11 +220,11 @@ def cadastro(request):
             else:
                 quantia_decimal = Decimal(quantia.replace(',', '.'))
 
-            # 4. Busca instâncias de Categoria e Fornecedor
+            # Busca instâncias de Categoria e Fornecedor
             categoria_instancia = Categoria.objects.get(id=id_cat)
             fornecedor_instancia = Fornecedor.objects.get(id=id_forn)
 
-            # 5. GARANTIR A EXISTÊNCIA DO PRODUTO (Sem erro de variável local)
+            # GARANTIR A EXISTÊNCIA DO PRODUTO (Sem erro de variável local)
             # Criamos com estoque zero para não violar a restrição de NOT NULL
             produto, criado = Produto.objects.get_or_create(
                 codigo_barras=barcode,
@@ -241,7 +241,7 @@ def cadastro(request):
                 }
             )
 
-            # 6. ATUALIZAÇÃO FINAL DOS DADOS E ESTOQUE
+            # ATUALIZAÇÃO FINAL DOS DADOS E ESTOQUE
             if not criado:
                 # Se o produto já existia, atualizamos os preços e somamos o estoque
                 produto.nome_produto = nome_produto
@@ -471,3 +471,53 @@ def desmembrar_produto(request, produto_id):
         messages.error(request, f"Estoque insuficiente de {producto_pacote.nome} para desmembrar.")
 
     return redirect('estoque')
+
+
+@login_required
+def operacao(request):
+    pacotes_para_desmembrar = Produto.objects.filter(
+        categoria__nome_categoria__icontains='Nutrição Animal',
+        unidade_medida='PA'
+    ).prefetch_related('filhos_granel').distinct()
+
+    context = {
+        'pacotes': pacotes_para_desmembrar,
+    }
+    return render(request, 'paginas/operacao.html', context)
+
+@login_required
+def confirmar_desmembramento(request, produto_id):
+    if request.method == 'POST':
+        # Busca o pacote original (PA)
+        produto_pacote = get_object_or_404(Produto, id=produto_id)
+        
+        # Tenta buscar o produto granel (KG) que aponta para este pacote
+        # Importante: No cadastro, o produto KG deve ter o produto PA como 'produto_pai'
+        produto_granel = Produto.objects.filter(produto_pai=produto_pacote, unidade_medida='KG').first()
+
+        # Se não encontrar o granel, ele vai te avisar na tela
+        if not produto_granel:
+            messages.error(request, f"Vínculo não encontrado! O produto '{produto_pacote.nome_produto}' não tem uma versão em KG associada a ele.")
+            return redirect('operacao')
+
+        peso_informado = request.POST.get('peso_manual')
+        
+        try:
+            peso_decimal = Decimal(peso_informado.replace(',', '.'))
+            
+            if produto_pacote.quantidade_estoque >= 1:
+                # Alteração e persistência no banco
+                produto_pacote.quantidade_estoque -= 1
+                produto_pacote.save() #[cite: 1]
+
+                produto_granel.quantidade_estoque += peso_decimal
+                produto_granel.save() #[cite: 1]
+
+                messages.success(request, f"Concluído! 1 pacote de {produto_pacote.nome_produto} foi desmembrado em {peso_decimal}kg.")
+            else:
+                messages.error(request, f"Estoque insuficiente de {produto_pacote.nome_produto} no sistema.")
+                
+        except (ValueError, TypeError, AttributeError):
+            messages.error(request, "Peso inválido. Digite apenas números.")
+
+    return redirect('operacao')

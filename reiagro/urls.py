@@ -31,6 +31,8 @@ urlpatterns = [
     path('buscar-cliente-cpf/', views.buscar_cliente_cpf, name='buscar_cliente_cpf'),
     path('relatorios/', views.relatorios, name='relatorios'),
     path('desmembrar/<int:produto_id>/', views.desmembrar_produto, name='desmembrar_produto'),
+    path('operacao/', views.operacao, name='operacao'),
+    path('operacao/desmembrar/<int:produto_id>/', views.confirmar_desmembramento, name='confirmar_desmembramento'),
 ]
 
 
