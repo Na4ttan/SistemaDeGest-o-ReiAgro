@@ -117,6 +117,22 @@
       <i class="bi bi-check2-circle me-2"></i>Finalizar venda
     </button>
   </div>
+
+  <div class="modal fade" id="modalEscolhaProduto" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-rei text-white">
+        <h5 class="modal-title"><i class="bi bi-layers me-2"></i>Escolha o item desejado</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="small text-muted">Vários registos encontrados para este código. Selecione o lote/versão correta:</p>
+        <div id="container-escolha-produtos" class="d-grid gap-2">
+          </div>
+      </div>
+    </div>
+  </div>
+</div>
 </section>
 
 {% endblock %}

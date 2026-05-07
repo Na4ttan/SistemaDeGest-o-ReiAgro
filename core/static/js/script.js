@@ -67,24 +67,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     if (codigoBipado === "") return;
 
-                    let produtoEncontrado = false;
-
-                    Array.from(selectProduto.options).forEach(option => {
-                        const codigoNoBanco = option.getAttribute('data-codigo');
-
-                        if (codigoNoBanco && codigoNoBanco.trim() === codigoBipado) {
-                            selectProduto.value = option.value;
-                            selectProduto.dispatchEvent(new Event('change'));
-                            window.adicionarItem();
-                            produtoEncontrado = true;
-                        }
-                    });
-
-                    if (!produtoEncontrado) {
-                        alert("Produto não encontrado!");
-                        selectProduto.value = "";
-                        inputPreco.value = "";
-                    }
+                    // Nova lógica: Em vez de percorrer o select aqui, perguntamos ao servidor
+                    fetch(`/buscar-produto-codigo/?barcode=${codigoBipado}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'multiplos') {
+                                // Abre a modal para o usuário escolher o lote/validade
+                                abrirModalEscolha(data.produtos);
+                            } 
+                            else if (data.status === 'sucesso') {
+                                // Se achou só um, seleciona no select e dispara a adição
+                                selectProduto.value = data.id;
+                                selectProduto.dispatchEvent(new Event('change'));
+                                window.adicionarItem();
+                            } 
+                            else {
+                                alert("Produto não encontrado ou sem estoque!");
+                            }
+                        })
+                        .catch(err => console.error("Erro na busca:", err));
 
                     this.value = '';
                     this.focus();
@@ -93,43 +94,61 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Função Global para adicionar item
-    window.adicionarItem = function () {
+    // Função para preencher e mostrar a Modal
+    function abrirModalEscolha(produtos) {
+        const container = document.getElementById('container-escolha-produtos');
+        container.innerHTML = ''; 
 
-        const codigoBipado = inputScan.value.trim();
-
-        if (!selectProduto.value && codigoBipado !== "") {
-        let achou = false;
-        Array.from(selectProduto.options).forEach(option => {
-            const codigoNoBanco = option.getAttribute('data-codigo');
-            if (codigoNoBanco && codigoNoBanco.trim() === codigoBipado) {
-                selectProduto.value = option.value;
+        produtos.forEach(p => {
+            const btn = document.createElement('button');
+            // Estilização compatível com o tema Rei Agro
+            btn.className = 'btn btn-outline-primary text-start p-3 mb-2 d-flex justify-content-between align-items-center w-100';
+            btn.innerHTML = `
+                <div>
+                    <strong>${p.nome}</strong><br>
+                    <small class="text-muted">Validade: ${p.validade} | Un: ${p.unidade}</small>
+                </div>
+                <span class="badge bg-success">R$ ${parseFloat(p.preco).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+            `;
+            
+            btn.onclick = () => {
+                // Vincula a escolha à estrutura existente do PDV
+                selectProduto.value = p.id;
                 selectProduto.dispatchEvent(new Event('change'));
-                achou = true;
-            }
+                window.adicionarItem();
+                
+                // Fecha a modal do Bootstrap
+                const modalElement = document.getElementById('modalEscolhaProduto');
+                const modalInstance = bootstrap.Modal.getOrCreateInstance(modalElement);
+                modalInstance.hide();
+            };
+            container.appendChild(btn);
         });
-        
-        if (!achou) {
-            alert("Produto não encontrado pelo código de barras!");
-            return;
-        }
+
+        const modalExibir = new bootstrap.Modal(document.getElementById('modalEscolhaProduto'));
+        modalExibir.show();
     }
 
+    // Função Global para adicionar item
+    window.adicionarItem = function () {
+        // REMOVIDO: O bloco que buscava pelo codigoBipado manualmente aqui.
+        // Agora, quem decide qual ID colocar no selectProduto é o fetch ou a Modal.
 
         if (!selectProduto || !inputPreco) return;
 
+        const produtoId = selectProduto.value;
         const option = selectProduto.options[selectProduto.selectedIndex];
-    const produtoId = selectProduto.value;
-    const precoPuro = inputPreco.getAttribute('data-valor-puro');
-    const unidadeMedida = option ? option.getAttribute('data-unidade') : '';
-    const nomeExibicao = option ? option.text : '';
 
-    const qtd = parseFloat(inputQuantidade.value.replace(',', '.'));
-
-        if (!produtoId || !precoPuro) {
-            alert("Por favor, bipar um produto ou digitar o código!");
-            return;
+        // Se o select estiver vazio, significa que o fetch ainda está processando 
+        // ou a modal está aberta aguardando o usuário.
+        if (!produtoId) {
+            return; 
         }
+
+        const precoPuro = inputPreco.getAttribute('data-valor-puro');
+        const unidadeMedida = option ? option.getAttribute('data-unidade') : '';
+        const nomeExibicao = option ? option.text : '';
+        const qtd = parseFloat(inputQuantidade.value.replace(',', '.'));
 
         if (qtd <= 0 || isNaN(qtd)) {
             alert("A quantidade deve ser maior que zero!");
@@ -141,6 +160,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        // Adiciona à lista de vendas
         itensVenda.push({
             id: produtoId,
             produto: nomeExibicao,
@@ -152,17 +172,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         atualizarResumo();
 
+        // Limpa os campos para o próximo bip
         selectProduto.value = "";
         inputPreco.value = "";
         inputScan.value = "";
         inputQuantidade.value = 1;
         inputQuantidade.step = "1";
         inputScan.focus();
-    };
-
-    window.removerItem = function (index) {
-        itensVenda.splice(index, 1);
-        atualizarResumo();
     };
 
     function atualizarResumo() {
@@ -232,7 +248,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('input-cpf').value = "";
                 document.getElementById('nome-cliente-cpf').style.display = 'none';
 
-                // 2. IMPORTANTE: Não chame mais window.print() ou funções que abrem o recibo.
             } else {
                 alert('Erro ao finalizar venda: ' + data.mensagem);
             }
@@ -246,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const displayTroco = document.getElementById('valor-troco');
 
     function calcularTroco() {
-        // Captura o total atual da venda removendo o "R$" e formatando para número
+       
         const totalVendaStr = document.getElementById('valor-total-exibicao').innerText
             .replace('R$', '').replace('.', '').replace(',', '.').trim();
         const totalVenda = parseFloat(totalVendaStr) || 0;

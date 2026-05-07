@@ -44,8 +44,13 @@
                         <form method="POST" action="{% url 'confirmar_desmembramento' p.id %}">
                             {% csrf_token %}
                             <td>
+                                <!-- NOVO CAMPO AUTOMATIZADO AQUI -->
                                 <div class="input-group input-group-sm" style="max-width: 120px;">
-                                    <input type="text" name="peso_manual" class="form-control" placeholder="Ex: 20" required>
+                                    <input type="text" 
+                                           name="peso_manual" 
+                                           class="form-control" 
+                                           value="{{ p.filhos_granel.first.fator_conversao|floatformat:0 }}" 
+                                           required>
                                     <span class="input-group-text">kg</span>
                                 </div>
                             </td>

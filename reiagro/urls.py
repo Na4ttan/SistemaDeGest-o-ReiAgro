@@ -33,6 +33,7 @@ urlpatterns = [
     path('desmembrar/<int:produto_id>/', views.desmembrar_produto, name='desmembrar_produto'),
     path('operacao/', views.operacao, name='operacao'),
     path('operacao/desmembrar/<int:produto_id>/', views.confirmar_desmembramento, name='confirmar_desmembramento'),
+    path('buscar-produto-codigo/', views.buscar_produto_por_codigo, name='buscar_produto_codigo'),
 ]
 
 
