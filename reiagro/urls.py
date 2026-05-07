@@ -30,9 +30,9 @@ urlpatterns = [
     path('frente-caixa/', views.frente_caixa, name='frente_caixa'),
     path('buscar-cliente-cpf/', views.buscar_cliente_cpf, name='buscar_cliente_cpf'),
     path('relatorios/', views.relatorios, name='relatorios'),
-    path('desmembrar/<int:produto_id>/', views.desmembrar_produto, name='desmembrar_produto'),
+    path('desmembrar/<int:produto_id>/', views.desmembrar, name='desmembrar'),
     path('operacao/', views.operacao, name='operacao'),
-    path('operacao/desmembrar/<int:produto_id>/', views.confirmar_desmembramento, name='confirmar_desmembramento'),
+    path('operacao/confirmar/', views.confirmar_desmembramento, name='confirmar_desmembramento'),
     path('buscar-produto-codigo/', views.buscar_produto_por_codigo, name='buscar_produto_codigo'),
 ]
 

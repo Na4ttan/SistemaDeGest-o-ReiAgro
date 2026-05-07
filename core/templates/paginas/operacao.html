@@ -4,72 +4,110 @@
 
 {% block content %}
 <section id="aba-operacao">
-    <div class="app-card mt-3">
+    <div class="app-card mb-4">
         <div class="section-head">
-            <h3>Operação de Desmembramento</h3>
-            <p class="text-muted small">Informe o peso e transforme pacotes em quilos.</p>
+            <h3>Desmembramento de Pacote</h3>
+            <p class="text-muted small">Bipe o pacote para fracionar o estoque.</p>
         </div>
 
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
                     {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             {% endfor %}
         {% endif %}
-
-        <div class="table-responsive mt-3">
-            <table class="table align-middle">
-                <thead>
-                    <tr class="small text-muted">
-                        <th>Pacote (Origem)</th>
-                        <th>Estoque Atual</th>
-                        <th>Peso do Pacote (KG)</th>
-                        <th class="text-center">Ação</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for p in pacotes %}
-                    <tr>
-                        <td>
-                            <strong>{{ p.nome_produto }}</strong><br>
-                            <small class="text-muted">{{ p.categoria.nome_categoria }}</small>
-                        </td>
-                        <td>
-                            <span class="status {% if p.quantidade_estoque <= 0 %}zero{% elif p.quantidade_estoque < 5 %}low{% else %}ok{% endif %}">
-                                {{ p.quantidade_estoque|floatformat:0 }} {{ p.unidade_medida }}
-                            </span>
-                        </td>
-                        <form method="POST" action="{% url 'confirmar_desmembramento' p.id %}">
-                            {% csrf_token %}
-                            <td>
-                                <!-- NOVO CAMPO AUTOMATIZADO AQUI -->
-                                <div class="input-group input-group-sm" style="max-width: 120px;">
-                                    <input type="text" 
-                                           name="peso_manual" 
-                                           class="form-control" 
-                                           value="{{ p.filhos_granel.first.fator_conversao|floatformat:0 }}" 
-                                           required>
-                                    <span class="input-group-text">kg</span>
-                                </div>
-                            </td>
-                            <td class="text-center">
-                                <button type="submit" class="btn btn-rei btn-sm {% if p.quantidade_estoque <= 0 %}disabled{% endif %}"
-                                        onclick="return confirm('Confirmar desmembramento de 1 pacote?')">
-                                    <i class="bi bi-scissors me-1"></i> Desmembrar
-                                </button>
-                            </td>
-                        </form>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="4" class="text-center py-4 text-muted">Nenhum pacote de Nutrição Animal encontrado.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        
+        <form method="GET" action="{% url 'operacao' %}" class="mt-3">
+            <div class="mb-3">
+                <label class="form-label">Código de barras do Pacote</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-qr-code-scan"></i></span>
+                    <input type="text" name="codigo_barras" class="form-control" 
+                           placeholder="Bipe ou digite o código..." value="{{ query|default:'' }}" autofocus>
+                    <button class="btn btn-rei" type="submit">Buscar Pacote</button>
+                </div>
+            </div>
+        </form>
     </div>
+
+    {% if pacotes %}
+        <div class="section-head mb-3">
+            <h4 class="ps-2">Lotes Encontrados</h4>
+        </div>
+
+        {% for p in pacotes %}
+        <div class="app-card mb-4">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <h4 class="mb-1">{{ p.nome_produto }}</h4>
+                    <span class="section-tag">Estoque: {{ p.quantidade_estoque|floatformat:0 }} {{ p.unidade_medida }}</span>
+                </div>
+                <div class="text-end">
+                    <p class="small mb-0 text-muted">Validade</p>
+                    <strong class="text-primary">{{ p.data_validade|date:"d/m/Y"|default:"Não informada" }}</strong>
+                </div>
+            </div>
+
+            <button class="btn btn-outline-rei w-100 mb-3" type="button" 
+                    data-bs-toggle="collapse" data-bs-target="#form-{{ p.id }}">
+                <i class="bi bi-box-arrow-up-right me-2"></i>Selecionar este lote para desmembrar
+            </button>
+
+            <div class="collapse" id="form-{{ p.id }}">
+                <hr class="mb-4">
+                <form action="{% url 'confirmar_desmembramento' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="id_pai" value="{{ p.id }}">
+                    <input type="hidden" name="data_validade" value="{{ p.data_validade|date:'Y-m-d' }}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Nome da Ração (Versão Granel)</label>
+                        <input type="text" name="nome_produto" class="form-control" 
+                               value="{{ p.nome_produto }} (A GRANEL)" required>
+                    </div>
+                    
+                    <div class="row g-2 mb-4">
+                        <div class="col-6">
+                            <label class="form-label">Peso p/ adicionar (KG)</label>
+                            <input type="number" 
+                                   name="estoque_inicial" 
+                                   class="form-control" 
+                                   value="{{ p.fator_conversao|floatformat:0 }}" 
+                                   min="1" 
+                                   step="0.001" 
+                                   required>
+                        </div>
+
+                        <div class="col-6">
+                            <label class="form-label">Preço Venda KG (R$)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" 
+                                       name="preco_venda" 
+                                       class="form-control" 
+                                       value="{{ p.preco_venda|floatformat:2 }}" 
+                                       min="0.01" 
+                                       step="0.01" 
+                                       required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-rei w-100">
+                        <i class="bi bi-scissors me-2"></i>Confirmar Desmembramento
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    {% elif query %}
+        <div class="app-card text-center py-5">
+            <i class="bi bi-exclamation-triangle text-warning display-4"></i>
+            <h5 class="mt-3">Nenhum pacote encontrado</h5>
+            <p class="text-muted">Verifique o código ou cadastre o produto.</p>
+        </div>
+    {% endif %}
 </section>
 {% endblock %}

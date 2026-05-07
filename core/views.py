@@ -245,9 +245,9 @@ def cadastro(request):
             fornecedor_instancia = Fornecedor.objects.get(id=id_forn)
 
             # SALVAR O PRODUTO PRINCIPAL (PACOTE OU NORMAL)
-            # Usamos o get_or_create para evitar duplicar o pacote se o código de barras for o mesmo
             produto, criado = Produto.objects.get_or_create(
                 codigo_barras=barcode,
+                data_validade=data_val, # Importante: diferencia lotes no estoque
                 defaults={
                     'nome_produto': nome_produto,
                     'categoria': categoria_instancia,
@@ -257,7 +257,6 @@ def cadastro(request):
                     'unidade_medida': unidade_medida,
                     'fator_conversao': fator_decimal,
                     'quantidade_estoque': quantia_decimal,
-                    'data_validade': data_val,
                 }
             )
 
@@ -268,23 +267,28 @@ def cadastro(request):
 
             # AUTOMAÇÃO DO VÍNCULO (Cria o item em KG se for granel)
             if is_granel:
-                # Tenta buscar ou criar a versão em KG
-                # O código de barras do filho ganha um prefixo "G-" para não conflitar com o original
+                # O código do filho será sempre "G-" + código original
+                barcode_filho = f"G-{barcode}"
+                
+                # BUSCA POR: Código de Barras (G-...) + Validade + Unidade KG
                 produto_kg, filho_criado = Produto.objects.get_or_create(
-                    nome_produto=f"{nome_produto} (A Granel)",
+                    codigo_barras=barcode_filho,
+                    data_validade=data_val,
                     unidade_medida='KG',
-                    produto_pai=produto, # Aqui criamos o vínculo com o pacote que acabamos de salvar
                     defaults={
+                        'nome_produto': f"{nome_produto} (A Granel)",
                         'categoria': categoria_instancia,
                         'fornecedor': fornecedor_instancia,
+                        'produto_pai': produto, # Vincula ao lote/pacote específico
                         'preco_custo': preco_custo_decimal / (fator_decimal if fator_decimal > 0 else 1),
                         'preco_venda': Decimal(request.POST.get('preco_venda_kg', '0').replace(',', '.')),
                         'quantidade_estoque': Decimal('0.000'),
-                        'codigo_barras': f"G-{barcode[:11]}", 
                         'fator_conversao': fator_decimal 
                     }
                 )
 
+                # Se o produto filho já existia (mesmo código e validade), 
+                # garantimos que o vínculo com o pai atual esteja correto
                 if not filho_criado:
                     produto_kg.produto_pai = produto
                     produto_kg.fator_conversao = fator_decimal
@@ -480,78 +484,130 @@ def processar_fechamento(request):
 
 
 @login_required
-def desmembrar_produto(request, produto_id):
-    # O produto_id aqui deve ser o do produto GRANEL (o que recebe o estoque)
-    produto_granel = get_object_or_404(Produto, id=produto_id)
-    
-    if not producto_granel.produto_pai:
-        messages.error(request, "Este produto não possui um pacote vinculado para desmembramento.")
-        return redirect('consulta')
-
-    produto_pacote = producto_granel.produto_pai
-
-    if producto_pacote.quantidade_estoque >= 1:
-        # 1. Diminui 1 unidade do pacote fechado
-        producto_pacote.quantidade_estoque -= 1
-        producto_pacote.save()
-
-        # 2. Aumenta o estoque do granel com base no fator de conversão
-        # Ex: Se o fator for 15, adiciona 15kg ao estoque granel
-        producto_granel.quantidade_estoque += producto_granel.fator_conversao
-        producto_granel.save()
-
-        messages.success(request, f"Sucesso! 1 unidade de {producto_pacote.nome} foi convertida em {producto_granel.fator_conversao} {producto_granel.forma_medida}.")
-    else:
-        messages.error(request, f"Estoque insuficiente de {producto_pacote.nome} para desmembrar.")
-
-    return redirect('estoque')
-
-
-@login_required
-def operacao(request):
-    pacotes_para_desmembrar = Produto.objects.filter(
-        categoria__nome_categoria__icontains='Nutrição Animal',
-        unidade_medida='PA'
-    ).prefetch_related('filhos_granel').distinct()
-
-    context = {
-        'pacotes': pacotes_para_desmembrar,
-    }
-    return render(request, 'paginas/operacao.html', context)
-
-@login_required
-def confirmar_desmembramento(request, produto_id):
+def desmembrar(request, produto_id):
     if request.method == 'POST':
-        # Busca o pacote original (PA)
+        #  Pega o PACOTE
         produto_pacote = get_object_or_404(Produto, id=produto_id)
-        
-        # Tenta buscar o produto granel (KG) que aponta para este pacote
-        # Importante: No cadastro, o produto KG deve ter o produto PA como 'produto_pai'
-        produto_granel = Produto.objects.filter(produto_pai=produto_pacote, unidade_medida='KG').first()
 
-        # Se não encontrar o granel, ele vai te avisar na tela
+        # Busca o KG que tenha o mesmo PAI e a MESMA VALIDADE
+        produto_granel = Produto.objects.filter(
+            produto_pai=produto_pacote, 
+            unidade_medida='KG',
+            data_validade=produto_pacote.data_validade 
+        ).first()
+
+        # Tenta buscar pelo código G- caso o vínculo de ID falhe
         if not produto_granel:
-            messages.error(request, f"Vínculo não encontrado! O produto '{produto_pacote.nome_produto}' não tem uma versão em KG associada a ele.")
+            barcode_filho = f"G-{produto_pacote.codigo_barras}"
+            produto_granel = Produto.objects.filter(
+                codigo_barras=barcode_filho,
+                data_validade=produto_pacote.data_validade,
+                unidade_medida='KG'
+            ).first()
+
+        if not produto_granel:
+            # Mensagem detalhada para te ajudar a debugar
+            msg = f"Vínculo não encontrado! Não existe um produto KG com a validade {produto_pacote.data_validade} associado ao pacote {produto_pacote.nome_produto}."
+            messages.error(request, msg)
             return redirect('operacao')
 
+        # Executa a conversão de estoque
         peso_informado = request.POST.get('peso_manual')
-        
         try:
             peso_decimal = Decimal(peso_informado.replace(',', '.'))
             
             if produto_pacote.quantidade_estoque >= 1:
-                # Alteração e persistência no banco
                 produto_pacote.quantidade_estoque -= 1
                 produto_pacote.save() 
 
                 produto_granel.quantidade_estoque += peso_decimal
                 produto_granel.save() 
 
-                messages.success(request, f"Concluído! 1 pacote de {produto_pacote.nome_produto} foi desmembrado em {peso_decimal}kg.")
+                messages.success(request, f"Concluído! 1 pacote de {produto_pacote.nome_produto} virou {peso_decimal}kg.")
             else:
-                messages.error(request, f"Estoque insuficiente de {produto_pacote.nome_produto} no sistema.")
+                messages.error(request, "Estoque de pacotes insuficiente.")
                 
         except (ValueError, TypeError, AttributeError):
-            messages.error(request, "Peso inválido. Digite apenas números.")
+            messages.error(request, "Peso inválido informado.")
 
+    return redirect('operacao')
+
+
+@login_required
+def operacao(request):
+    query = request.GET.get('codigo_barras')
+    pacotes = []
+    if query:
+        # Busca pacotes que tenham o código de barras informado
+        pacotes = Produto.objects.filter(codigo_barras=query, unidade_medida='PA')
+    
+    # Busca categorias e fornecedores para o formulário de "Edição/Cadastro" do Granel
+    categorias = Categoria.objects.all()
+    fornecedores = Fornecedor.objects.all()
+    
+    return render(request, 'paginas/operacao.html', {
+        'pacotes': pacotes,
+        'categorias': categorias,
+        'fornecedores': fornecedores,
+        'query': query
+    })
+
+@login_required
+def confirmar_desmembramento(request):
+    if request.method == 'POST':
+        id_pai = request.POST.get('id_pai')
+        pacote_pai = get_object_or_404(Produto, id=id_pai)
+        
+        nome = request.POST.get('nome_produto')
+        preco_venda = request.POST.get('preco_venda').replace(',', '.')
+        estoque_input = request.POST.get('estoque_inicial', '').strip().replace(',', '.')
+        validade = request.POST.get('data_validade')
+
+        # VALIDAÇÃO: Se o peso estiver vazio, interrompe o erro
+        if not estoque_input:
+            messages.error(request, "O campo 'Peso p/ adicionar' é obrigatório!")
+            return redirect('operacao')
+
+        try:
+            estoque_decimal = Decimal(estoque_input)
+            preco_venda_decimal = Decimal(preco_venda)
+            
+            if pacote_pai.quantidade_estoque >= 1:
+                # 1. Tira do pacote
+                pacote_pai.quantidade_estoque -= 1
+                pacote_pai.save()
+                
+                # 2. Custo proporcional
+                fator = pacote_pai.fator_conversao if pacote_pai.fator_conversao > 0 else 1
+                preco_custo_kg = pacote_pai.preco_custo / fator
+
+                # 3. Busca ou Cria Granel
+                produto_granel, created = Produto.objects.get_or_create(
+                    produto_pai=pacote_pai,
+                    data_validade=validade,
+                    unidade_medida='KG',
+                    defaults={
+                        'nome_produto': nome,
+                        'preco_venda': preco_venda_decimal,
+                        'preco_custo': preco_custo_kg,
+                        'quantidade_estoque': 0,
+                        'categoria': pacote_pai.categoria,
+                        'fornecedor': pacote_pai.fornecedor,
+                        'codigo_barras': f"G-{pacote_pai.codigo_barras}",
+                        'fator_conversao': 1
+                    }
+                )
+                
+                # 4. Atualiza estoque e preço
+                produto_granel.quantidade_estoque += estoque_decimal
+                produto_granel.preco_venda = preco_venda_decimal
+                produto_granel.save()
+                
+                messages.success(request, f"Sucesso! Foram adicionados {estoque_decimal}kg ao estoque.")
+            else:
+                messages.error(request, "Estoque de pacotes insuficiente.")
+                
+        except (InvalidOperation, ValueError):
+            messages.error(request, "Valor de peso ou preço inválido!")
+            
     return redirect('operacao')
