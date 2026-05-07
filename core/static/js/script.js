@@ -131,54 +131,79 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Função Global para adicionar item
     window.adicionarItem = function () {
-        // REMOVIDO: O bloco que buscava pelo codigoBipado manualmente aqui.
-        // Agora, quem decide qual ID colocar no selectProduto é o fetch ou a Modal.
+    const codigoBipado = inputScan.value.trim();
+    const produtoIdSelecionado = selectProduto.value;
 
-        if (!selectProduto || !inputPreco) return;
+    // 1. Lógica para quando o usuário clica no botão "Adicionar" manualmente
+    // mas não selecionou nada no menu, apenas digitou/bipou o código.
+    if (!produtoIdSelecionado && codigoBipado !== "") {
+        fetch(`/buscar-produto-codigo/?barcode=${codigoBipado}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'multiplos') {
+                    // Abre a modal se houver mais de um lote/tipo (PA ou KG)
+                    abrirModalEscolha(data.produtos); 
+                } 
+                else if (data.status === 'sucesso') {
+                    // Se só houver um, seleciona ele no select e chama a função novamente
+                    selectProduto.value = data.id;
+                    selectProduto.dispatchEvent(new Event('change'));
+                    window.adicionarItem(); 
+                } 
+                else {
+                    alert("Produto não encontrado ou sem estoque!");
+                    inputScan.value = "";
+                }
+            })
+            .catch(err => console.error("Erro na busca:", err));
+        return; // Interrompe a execução para aguardar a resposta ou a escolha na modal
+    }
 
-        const produtoId = selectProduto.value;
-        const option = selectProduto.options[selectProduto.selectedIndex];
+    // 2. Lógica Original de Inserção (Executa quando já temos um ID selecionado)
+    if (!selectProduto || !inputPreco) return;
 
-        // Se o select estiver vazio, significa que o fetch ainda está processando 
-        // ou a modal está aberta aguardando o usuário.
-        if (!produtoId) {
-            return; 
-        }
+    const produtoId = selectProduto.value;
+    const option = selectProduto.options[selectProduto.selectedIndex];
 
-        const precoPuro = inputPreco.getAttribute('data-valor-puro');
-        const unidadeMedida = option ? option.getAttribute('data-unidade') : '';
-        const nomeExibicao = option ? option.text : '';
-        const qtd = parseFloat(inputQuantidade.value.replace(',', '.'));
+    // Se o select continuar vazio após a verificação acima, não faz nada
+    if (!produtoId) {
+        return; 
+    }
 
-        if (qtd <= 0 || isNaN(qtd)) {
-            alert("A quantidade deve ser maior que zero!");
-            return;
-        }
+    const precoPuro = inputPreco.getAttribute('data-valor-puro');
+    const unidadeMedida = option ? option.getAttribute('data-unidade') : '';
+    const nomeExibicao = option ? option.text : '';
+    const qtd = parseFloat(inputQuantidade.value.replace(',', '.'));
 
-        if (unidadeMedida !== 'KG' && qtd % 1 !== 0) {
-            alert("Produtos com unidade '" + unidadeMedida + "' só podem ser vendidos em quantidades inteiras!");
-            return;
-        }
+    if (qtd <= 0 || isNaN(qtd)) {
+        alert("A quantidade deve ser maior que zero!");
+        return;
+    }
 
-        // Adiciona à lista de vendas
-        itensVenda.push({
-            id: produtoId,
-            produto: nomeExibicao,
-            unidade: unidadeMedida,
-            quantidade: qtd,
-            preco: parseFloat(precoPuro),
-            subtotal: parseFloat(precoPuro) * qtd
-        });
+    if (unidadeMedida !== 'KG' && qtd % 1 !== 0) {
+        alert("Produtos com unidade '" + unidadeMedida + "' só podem ser vendidos em quantidades inteiras!");
+        return;
+    }
 
-        atualizarResumo();
+    // Adiciona à lista de vendas
+    itensVenda.push({
+        id: produtoId,
+        produto: nomeExibicao,
+        unidade: unidadeMedida,
+        quantidade: qtd,
+        preco: parseFloat(precoPuro),
+        subtotal: parseFloat(precoPuro) * qtd
+    });
 
-        // Limpa os campos para o próximo bip
-        selectProduto.value = "";
-        inputPreco.value = "";
-        inputScan.value = "";
-        inputQuantidade.value = 1;
-        inputQuantidade.step = "1";
-        inputScan.focus();
+    atualizarResumo();
+
+    // Limpa os campos para o próximo item
+    selectProduto.value = "";
+    inputPreco.value = "";
+    inputScan.value = "";
+    inputQuantidade.value = 1;
+    inputQuantidade.step = "1";
+    inputScan.focus();
     };
 
     function atualizarResumo() {
@@ -213,6 +238,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (typeof calcularTroco === "function") calcularTroco();
     }
+
+    // Função global para remover item do array e atualizar a tela
+    window.removerItem = function (index) {
+        // Remove 1 item do array itensVenda na posição 'index'
+        itensVenda.splice(index, 1);
+        
+        // Redesenha a lista e recalcula o total
+        atualizarResumo();
+    };
 
     window.finalizarVenda = function () {
         const formaPagamento = document.getElementById('select-pagamento').value;
