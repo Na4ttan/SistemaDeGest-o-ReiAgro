@@ -34,6 +34,7 @@ urlpatterns = [
     path('operacao/', views.operacao, name='operacao'),
     path('operacao/confirmar/', views.confirmar_desmembramento, name='confirmar_desmembramento'),
     path('buscar-produto-codigo/', views.buscar_produto_por_codigo, name='buscar_produto_codigo'),
+    path('operacao/excluir/<int:produto_id>/', views.excluir_produto_vencido, name='excluir_produto_vencido'),
 ]
 
 

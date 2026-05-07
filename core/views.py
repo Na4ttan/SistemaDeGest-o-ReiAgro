@@ -541,6 +541,13 @@ def operacao(request):
         # Busca pacotes que tenham o código de barras informado
         pacotes = Produto.objects.filter(codigo_barras=query, unidade_medida='PA')
     
+    # --- NOVA LÓGICA PARA PRODUTOS VENCIDOS ---
+    hoje = timezone.now().date()
+    vencidos_nutricao = Produto.objects.filter(
+        categoria__nome_categoria__icontains='Nutrição Animal',
+        data_validade__lt=hoje
+    ).order_by('data_validade')
+
     # Busca categorias e fornecedores para o formulário de "Edição/Cadastro" do Granel
     categorias = Categoria.objects.all()
     fornecedores = Fornecedor.objects.all()
@@ -549,7 +556,8 @@ def operacao(request):
         'pacotes': pacotes,
         'categorias': categorias,
         'fornecedores': fornecedores,
-        'query': query
+        'query': query,
+        'vencidos_nutricao': vencidos_nutricao, # Adicionado ao contexto
     })
 
 @login_required
@@ -610,4 +618,17 @@ def confirmar_desmembramento(request):
         except (InvalidOperation, ValueError):
             messages.error(request, "Valor de peso ou preço inválido!")
             
+    return redirect('operacao')
+
+
+@login_required
+def excluir_produto_vencido(request, produto_id):
+    produto = get_object_or_404(Produto, id=produto_id)
+    try:
+        nome = produto.nome_produto
+        produto.delete()
+        messages.success(request, f"Produto '{nome}' excluído com sucesso por estar vencido.")
+    except Exception as e:
+        messages.error(request, "Não foi possível excluir o produto. Ele pode estar vinculado a vendas existentes.")
+    
     return redirect('operacao')
