@@ -548,7 +548,8 @@ def operacao(request):
     hoje = timezone.now().date()
     vencidos_nutricao = Produto.objects.filter(
         categoria__nome_categoria__icontains='Nutrição Animal',
-        data_validade__lt=hoje
+        data_validade__lt=hoje,
+        quantidade_estoque__gt=0
     ).order_by('data_validade')
 
     # Busca categorias e fornecedores para o formulário de "Edição/Cadastro" do Granel
@@ -626,12 +627,19 @@ def confirmar_desmembramento(request):
 
 @login_required
 def excluir_produto_vencido(request, produto_id):
-    produto = get_object_or_404(Produto, id=produto_id)
-    try:
+    if request.method == 'POST':
+        produto = get_object_or_404(Produto, id=produto_id)
         nome = produto.nome_produto
-        produto.delete()
-        messages.success(request, f"Produto '{nome}' excluído com sucesso por estar vencido.")
-    except Exception as e:
-        messages.error(request, "Não foi possível excluir o produto. Ele pode estar vinculado a vendas existentes.")
+        
+        # Zera o estoque do produto selecionado
+        produto.quantidade_estoque = 0
+        produto.save()
+        
+        # Se for um produto pai, também zera o estoque dos filhos (granel)
+        filhos = Produto.objects.filter(produto_pai=produto)
+        if filhos.exists():
+            filhos.update(quantidade_estoque=0)
+            
+        messages.warning(request, f"O estoque de '{nome}' e seus derivados foi zerado devido ao descarte.")
     
     return redirect('operacao')
