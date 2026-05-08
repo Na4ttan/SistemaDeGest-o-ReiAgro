@@ -88,16 +88,16 @@
             <div class="row g-2 mb-3">
                 <div class="col-6">
                     <label for="preco_custo" class="form-label">Preço Custo</label>
-                    <input type="number" class="form-control" id="preco_custo" name="preco_custo" placeholder="0.00" required>
+                    <input type="number" class="form-control" id="preco_custo" name="preco_custo" min="0.01" placeholder="0.00" required>
                 </div>
                 <div class="col-6">
                     <label for="preco_venda" class="form-label">Preço Venda</label>
-                    <input type="number" class="form-control" id="preco_venda" name="preco_venda" placeholder="0.00" required>
+                    <input type="number" class="form-control" id="preco_venda" name="preco_venda" min="0.01" placeholder="0.00" required>
                 </div>
             <div class="row g-2 mb-4">
                 <div class="col-6">
                     <label for="quantia" class="form-label"> Quantidade </label>
-                    <input type="number" name="quantia" class="form-control" value="0" required>
+                    <input type="number" name="quantia" class="form-control" value="0" min="0" required>
                 </div>
                 <div class="col-6">
                     <label for="unidade_medida" class="form-label"> Forma de medida </label>
@@ -176,22 +176,22 @@
         <div class="row g-2 mb-3">
             <div class="col-6">
                 <label class="form-label">Preço Custo (Saco)</label>
-                <input type="number" step="0.01" class="form-control" name="preco_custo" placeholder="0.00" required>
+                <input type="number" step="0.01" class="form-control" name="preco_custo" placeholder="0.00" min="0.01" required>
             </div>
             <div class="col-6">
                 <label class="form-label">Preço Venda (Saco)</label>
-                <input type="number" step="0.01" class="form-control" name="preco_venda_saco" placeholder="0.00" required>
+                <input type="number" step="0.01" class="form-control" name="preco_venda_saco" placeholder="0.00" min="0.01" required>
             </div>
         </div>
 
         <div class="row g-2 mb-3">
             <div class="col-6">
                 <label class="form-label">Peso do Saco (KG)</label>
-                <input type="number" step="0.001" class="form-control" name="peso_pacote" placeholder="Ex: 15" required>
+                <input type="number" step="0.001" class="form-control" name="peso_pacote" placeholder="Ex: 15" min="1" required>
             </div>
             <div class="col-6">
                 <label class="form-label">Qtd. (Sacos)</label>
-                <input type="number" class="form-control" name="quantia" value="0" required>
+                <input type="number" class="form-control" name="quantia" value="0" min="0" required>
             </div>
         </div>
 
