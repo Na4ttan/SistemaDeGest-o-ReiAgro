@@ -128,6 +128,7 @@ STATIC_URL = 'static/'
 # Esta linha diz ao Django: "Olhe dentro da pasta core/static"
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'core', 'static'),
+    BASE_DIR / "static",
 ]
 
 LOGIN_URL = 'login'
