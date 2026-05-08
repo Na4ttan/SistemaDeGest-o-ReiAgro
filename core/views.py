@@ -149,7 +149,10 @@ def frente_caixa(request):
 def buscar_produto_por_codigo(request):
     barcode = request.GET.get('barcode')
     # Buscamos todos os produtos que tenham esse código e estoque
-    produtos = Produto.objects.filter(codigo_barras=barcode, quantidade_estoque__gt=0)
+    produtos = Produto.objects.filter(
+        Q(codigo_barras=barcode) | Q(codigo_barras=f"G-{barcode}"),
+        quantidade_estoque__gt=0
+    ).order_by('-unidade_medida')
 
     if produtos.count() > 1:
         lista_produtos = []
