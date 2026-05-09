@@ -67,13 +67,20 @@ def frente_caixa(request):
                 total_venda_calculado += float(item['subtotal'])
 
             recibo_html = f"""
-            <html>
-            <head><style>
-                body {{ font-family: monospace; width: 300px; }}
-                .text-center {{ text-align: center; }}
-                .separador {{ border-top: 1px dashed #000; margin: 10px 0; }}
-            </style></head>
-            <body>
+            <div class="recibo-venda">
+                <style>
+                    .recibo-venda {{ 
+                        font-family: monospace !important; 
+                        width: 100%; 
+                        max-width: 300px; 
+                        margin: 0 auto;
+                        color: #000;
+                    }}
+                    .recibo-venda .text-center {{ text-align: center; }}
+                    .recibo-venda .separador {{ border-top: 1px dashed #000; margin: 10px 0; }}
+                    .recibo-venda table {{ width: 100%; border-collapse: collapse; }}
+                    .recibo-venda th {{ text-align: left; }}
+                </style>
                 <h2 class="text-center">REI AGRO</h2>
                 <p class="text-center">Loja 02 - JD. Colina I<br>Fone: 19 989900845</p>
                 <p class="text-center">Recibo de Venda</p>
@@ -93,9 +100,10 @@ def frente_caixa(request):
                 <p><strong>TOTAL: R$ {total_venda_calculado:.2f}</strong></p>
                 <p>Pagamento: {forma_pagamento}</p>
                 <p class="text-center">Obrigado pela preferência!</p>
-            </body>
-            </html>
+            </div>
             """
+            
+
             # === NOVA FUNCIONALIDADE: ENVIO DE EMAIL ===
             try:
                 # Verificamos se existe um objeto de cliente e se ele tem e-mail

@@ -135,4 +135,25 @@
 </div>
 </section>
 
+<div class="modal fade" id="modalRecibo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-receipt me-2"></i>Recibo de Venda</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-light p-0">
+                <div id="conteudo-recibo-a6" style="background: white; padding: 20px; box-shadow: 0 0 5px rgba(0,0,0,0.1);">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-rei" onclick="compartilharRecibo()">
+                    <i class="bi bi-share"></i> Compartilhar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

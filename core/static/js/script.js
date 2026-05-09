@@ -275,7 +275,20 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'sucesso') {
-                alert("Venda realizada com sucesso!");
+                // Injeta o HTML no modal
+                const containerRecibo = document.getElementById('conteudo-recibo-a6');
+                if (containerRecibo) {
+                    containerRecibo.innerHTML = data.recibo_html;
+                }
+
+                // Abre o modal para visualização
+                const elementoModal = document.getElementById('modalRecibo');
+                if (elementoModal) {
+                    const modalInstancia = new bootstrap.Modal(elementoModal);
+                    modalInstancia.show();
+                }
+
+                // Limpeza dos dados
                 itensVenda = [];
                 atualizarResumo();
                 document.getElementById('valor-total-exibicao').textContent = "R$ 0,00";
@@ -350,6 +363,17 @@ window.alternarCamera = function () {
         icone.className = 'bi bi-camera';
         btnCamera.classList.replace('btn-danger', 'btn-outline-rei');
     }
+
+    const modalReciboElement = document.getElementById('modalRecibo');
+    if (modalReciboElement) {
+        modalReciboElement.addEventListener('hidden.bs.modal', function () {
+            // Limpa as travas de layout do Bootstrap
+            document.body.classList.remove('modal-open');
+            document.body.removeAttribute('style');
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(b => b.remove());
+        });
+}
 };
 
 function startScanner() {
@@ -451,3 +475,51 @@ document.getElementById('input-cpf').addEventListener('blur', function() {
         displayNome.style.display = 'none';
     }
 });
+
+window.compartilharRecibo = async function() {
+    // 1. Verifica se as bibliotecas estão disponíveis
+    if (!window.jspdf || !window.html2canvas) {
+        alert("Erro: Bibliotecas de PDF ainda estão carregando. Tente novamente em instantes.");
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const elemento = document.getElementById('conteudo-recibo-a6');
+
+    try {
+        // 2. Transforma o HTML em Imagem
+        const canvas = await html2canvas(elemento, { 
+            scale: 2,
+            useCORS: true,
+            logging: false 
+        });
+        const imgData = canvas.toDataURL('image/png');
+
+        // 3. Monta o PDF A6
+        const pdf = new jsPDF({
+            orientation: 'p',
+            unit: 'mm',
+            format: [105, 148]
+        });
+
+        pdf.addImage(imgData, 'PNG', 5, 5, 95, 0);
+        
+        // 4. Converte para arquivo compartilhavel
+        const pdfBlob = pdf.output('blob');
+        const arquivo = new File([pdfBlob], "recibo_rei_agro.pdf", { type: "application/pdf" });
+
+        // 5. Compartilha ou faz Download
+        if (navigator.canShare && navigator.canShare({ files: [arquivo] })) {
+            await navigator.share({
+                files: [arquivo],
+                title: 'Recibo Rei Agro',
+            });
+        } else {
+            pdf.save("recibo_rei_agro.pdf");
+            alert("PDF gerado com sucesso! Verifique sua pasta de downloads.");
+        }
+    } catch (err) {
+        console.error("Erro na geração do PDF:", err);
+        alert("Não foi possível gerar o PDF. Tente novamente.");
+    }
+};
