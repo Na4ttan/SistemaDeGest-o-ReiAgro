@@ -275,25 +275,36 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'sucesso') {
-                // Injeta o HTML no modal
-                const containerRecibo = document.getElementById('conteudo-recibo-a6');
-                if (containerRecibo) {
-                    containerRecibo.innerHTML = data.recibo_html;
+                // --- NOVA LÓGICA DE DECISÃO ---
+                const inputIdOculto = document.getElementById('id-cliente-venda');
+                const temEmail = inputIdOculto.getAttribute('data-tem-email') === 'true';
+
+                if (!temEmail) {
+                    // SE NÃO TEM EMAIL: Injeta o HTML e abre o modal para WhatsApp
+                    const containerRecibo = document.getElementById('conteudo-recibo-a6');
+                    if (containerRecibo) {
+                        containerRecibo.innerHTML = data.recibo_html;
+                    }
+
+                    const elementoModal = document.getElementById('modalRecibo');
+                    if (elementoModal) {
+                        const modalInstancia = new bootstrap.Modal(elementoModal);
+                        modalInstancia.show();
+                    }
+                } else {
+                    // SE TEM EMAIL: Apenas avisa que já foi enviado
+                    alert("Venda concluída! O recibo foi enviado para o e-mail do cliente.");
                 }
 
-                // Abre o modal para visualização
-                const elementoModal = document.getElementById('modalRecibo');
-                if (elementoModal) {
-                    const modalInstancia = new bootstrap.Modal(elementoModal);
-                    modalInstancia.show();
-                }
-
-                // Limpeza dos dados
+                // --- LIMPEZA DOS DADOS ---
                 itensVenda = [];
                 atualizarResumo();
                 document.getElementById('valor-total-exibicao').textContent = "R$ 0,00";
                 document.getElementById('input-cpf').value = "";
                 document.getElementById('nome-cliente-cpf').style.display = 'none';
+                
+                // Reseta a etiqueta de e-mail para a próxima venda
+                inputIdOculto.setAttribute('data-tem-email', 'false');
 
             } else {
                 alert('Erro ao finalizar venda: ' + data.mensagem);
@@ -453,13 +464,19 @@ document.getElementById('input-cpf').addEventListener('blur', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'sucesso') {
-                    // Armazena o ID no input oculto e mostra o nome[cite: 5]
                     inputIdOculto.value = data.id;
+                    
+                    // AQUI ESTÁ A ALTERAÇÃO: Guardamos se o cliente tem e-mail
+                    inputIdOculto.setAttribute('data-tem-email', data.tem_email); 
+                    
                     displayNome.textContent = "Cliente: " + data.nome;
                     displayNome.className = "form-text text-success fw-bold mt-1";
                     displayNome.style.display = 'block';
                 } else {
                     inputIdOculto.value = "";
+                    // Se não encontrou o cliente, resetamos a etiqueta de e-mail
+                    inputIdOculto.setAttribute('data-tem-email', 'false');
+                    
                     displayNome.textContent = "Cliente não encontrado.";
                     displayNome.className = "form-text text-danger mt-1";
                     displayNome.style.display = 'block';
@@ -468,10 +485,12 @@ document.getElementById('input-cpf').addEventListener('blur', function() {
             .catch(error => {
                 console.error('Erro:', error);
                 inputIdOculto.value = "";
+                inputIdOculto.setAttribute('data-tem-email', 'false');
                 displayNome.style.display = 'none';
             });
     } else {
         inputIdOculto.value = "";
+        inputIdOculto.setAttribute('data-tem-email', 'false');
         displayNome.style.display = 'none';
     }
 });

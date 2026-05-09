@@ -192,7 +192,12 @@ def buscar_cliente_cpf(request):
     cpf = request.GET.get('cpf')
     try:
         cliente = Cliente.objects.get(cpf=cpf)
-        return JsonResponse({'status': 'sucesso', 'nome': cliente.nome, 'id': cliente.id})
+        return JsonResponse({
+            'status': 'sucesso', 
+            'nome': cliente.nome, 
+            'id': cliente.id,
+            'tem_email': bool(cliente.email) # Retorna True se houver e-mail cadastrado
+        })
     except Cliente.DoesNotExist:
         return JsonResponse({'status': 'erro', 'mensagem': 'Cliente não encontrado'}, status=404)
 
