@@ -496,9 +496,8 @@ document.getElementById('input-cpf').addEventListener('blur', function() {
 });
 
 window.compartilharRecibo = async function() {
-    // 1. Verifica se as bibliotecas estão disponíveis
     if (!window.jspdf || !window.html2canvas) {
-        alert("Erro: Bibliotecas de PDF ainda estão carregando. Tente novamente em instantes.");
+        alert("Carregando componentes... Tente novamente.");
         return;
     }
 
@@ -506,39 +505,35 @@ window.compartilharRecibo = async function() {
     const elemento = document.getElementById('conteudo-recibo-a6');
 
     try {
-        // 2. Transforma o HTML em Imagem
+        // Escala 3 mantém a nitidez da fonte pequena
         const canvas = await html2canvas(elemento, { 
-            scale: 2,
-            useCORS: true,
-            logging: false 
+            scale: 3,
+            useCORS: true
         });
         const imgData = canvas.toDataURL('image/png');
 
-        // 3. Monta o PDF A6
+        // Largura de 80mm é ideal para leitura em celular
+        const larguraPdf = 80; 
+        const alturaPdf = (canvas.height * larguraPdf) / canvas.width;
+
         const pdf = new jsPDF({
             orientation: 'p',
             unit: 'mm',
-            format: [105, 148]
+            format: [larguraPdf, alturaPdf + 5] 
         });
 
-        pdf.addImage(imgData, 'PNG', 5, 5, 95, 0);
+        // Adiciona a imagem ocupando a largura total disponível
+        pdf.addImage(imgData, 'PNG', 0, 2, larguraPdf, alturaPdf);
         
-        // 4. Converte para arquivo compartilhavel
         const pdfBlob = pdf.output('blob');
         const arquivo = new File([pdfBlob], "recibo_rei_agro.pdf", { type: "application/pdf" });
 
-        // 5. Compartilha ou faz Download
         if (navigator.canShare && navigator.canShare({ files: [arquivo] })) {
-            await navigator.share({
-                files: [arquivo],
-                title: 'Recibo Rei Agro',
-            });
+            await navigator.share({ files: [arquivo], title: 'Recibo Rei Agro' });
         } else {
             pdf.save("recibo_rei_agro.pdf");
-            alert("PDF gerado com sucesso! Verifique sua pasta de downloads.");
         }
     } catch (err) {
         console.error("Erro na geração do PDF:", err);
-        alert("Não foi possível gerar o PDF. Tente novamente.");
     }
 };

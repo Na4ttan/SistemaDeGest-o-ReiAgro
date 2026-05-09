@@ -66,61 +66,68 @@ def frente_caixa(request):
 
                 total_venda_calculado += float(item['subtotal'])
 
+            cor_primaria = "#2f6f3e" # Verde Rei Agro
+
             recibo_html = f"""
-            <div class="recibo-venda">
-                <style>
-                    .recibo-venda {{ 
-                        font-family: monospace !important; 
-                        width: 100%; 
-                        max-width: 300px; 
-                        margin: 0 auto;
-                        color: #000;
-                    }}
-                    .recibo-venda .text-center {{ text-align: center; }}
-                    .recibo-venda .separador {{ border-top: 1px dashed #000; margin: 10px 0; }}
-                    .recibo-venda table {{ width: 100%; border-collapse: collapse; }}
-                    .recibo-venda th {{ text-align: left; }}
-                </style>
-                <h2 class="text-center">REI AGRO</h2>
+            <html>
+            <head><style>
+                body {{ font-family: monospace; width: 300px; color: #333; }}
+                .text-center {{ text-align: center; }}
+                .separador {{ border-top: 1px dashed #000; margin: 10px 0; }}
+                table {{ width: 100%; border-collapse: collapse; }}
+                th {{ text-align: left; border-bottom: 1px solid #ddd; }}
+                td {{ padding: 5px 0; }}
+            </style></head>
+            <body>
+                <h2 class="text-center" style="color: #2f6f3e;">REI AGRO</h2>
                 <p class="text-center">Loja 02 - JD. Colina I<br>Fone: 19 989900845</p>
-                <p class="text-center">Recibo de Venda</p>
+                <p class="text-center"><strong>Recibo de Compra</strong></p>
                 <p>Cliente: {nome_para_venda}</p>
                 <div class="separador"></div>
                 <table>
-                    <thead><tr><th>Prod</th><th>Qtd</th><th>Total</th></tr></thead>
+                    <thead>
+                        <tr><th>Item</th><th>Qtd</th><th>Total</th></tr>
+                    </thead>
                     <tbody>
             """
+
             for item in itens:
-                recibo_html += f"<tr><td>{item['produto']}</td><td>{item['quantidade']} {item['unidade']}</td><td>R$ {item['subtotal']:.2f}</td></tr>"
+                # Acessamos os dados diretamente do dicionário 'item' que vem do JavaScript
+                nome_prod = item.get('produto', 'Produto')
+                quantidade = item.get('quantidade', 0)
+                unidade = item.get('unidade', '').lower()
+                # Garantimos que o subtotal seja formatado como número
+                subtotal = float(item.get('subtotal', 0))
+
+                recibo_html += f"<tr><td>{nome_prod}</td><td>{quantidade} {unidade}</td><td>R$ {subtotal:.2f}</td></tr>"
 
             recibo_html += f"""
                     </tbody>
                 </table>
                 <div class="separador"></div>
-                <p><strong>TOTAL: R$ {total_venda_calculado:.2f}</strong></p>
-                <p>Pagamento: {forma_pagamento}</p>
-                <p class="text-center">Obrigado pela preferência!</p>
-            </div>
+                <p style="font-size: 1.2rem;"><strong>TOTAL: R$ {total_venda_calculado:.2f}</strong></p>
+                <p>Forma de Pagamento: {forma_pagamento}</p>
+                <div class="separador"></div>
+                <p class="text-center">Agradecemos a preferência!<br>Volte sempre.</p>
+            </body>
+            </html>
             """
-            
 
             # === NOVA FUNCIONALIDADE: ENVIO DE EMAIL ===
             try:
-                # Verificamos se existe um objeto de cliente e se ele tem e-mail
                 if 'cliente_obj' in locals() and cliente_obj.email:
                     email_venda = EmailMessage(
                         subject=f'Recibo de Compra - Rei Agro - Pedido #{nova_venda.id}',
                         body=recibo_html,
-                        from_email=None,  # Usa o DEFAULT_FROM_EMAIL do settings.py
+                        from_email=None,  
                         to=[cliente_obj.email],
                     )
                     email_venda.content_subtype = "html"
                     email_venda.send()
             except Exception as mail_error:
-                # Isso evita que a venda seja cancelada por um erro de rede
                 print(f"Erro ao enviar recibo por e-mail: {mail_error}")
 
-            # Retorno para o script.js
+            # RETORNO ÚNICO DE SUCESSO PARA O SCRIPT.JS
             return JsonResponse({
                 'status': 'sucesso', 
                 'mensagem': 'Venda salva com sucesso!',
@@ -128,30 +135,19 @@ def frente_caixa(request):
             })
 
         except Exception as e:
+            # RETORNO ÚNICO DE ERRO
             return JsonResponse({'status': 'erro', 'mensagem': str(e)}, status=400)
 
-            return JsonResponse({
-                'status': 'sucesso', 
-                'mensagem': 'Venda salva!',
-                'recibo_html': recibo_html 
-            })
-        except Exception as e:
-            return JsonResponse({'status': 'erro', 'mensagem': str(e)}, status=400)
-
-    # Busca os dados reias para o HTML
+    # FORA DO POST: Busca os dados para renderizar a página inicial
     produtos = Produto.objects.all().order_by('data_validade', 'nome_produto')
-
-    #  BUSCA TODOS OS CLIENTES 
     clientes = Cliente.objects.all()
 
-    # Coloca os clientes no dicionário de contexto
     context = {
         'produtos': produtos,
         'clientes': clientes,
     }
 
     return render(request, 'paginas/index.html', context)
-
 
 @login_required
 def buscar_produto_por_codigo(request):
