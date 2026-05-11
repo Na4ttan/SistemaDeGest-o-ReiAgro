@@ -142,9 +142,12 @@ def frente_caixa(request):
     produtos = Produto.objects.all().order_by('data_validade', 'nome_produto')
     clientes = Cliente.objects.all()
 
+    cpf_para_preencher = request.session.pop('cpf_novo', '')
+
     context = {
         'produtos': produtos,
         'clientes': clientes,
+        'cpf_auto' : cpf_para_preencher,
     }
 
     return render(request, 'paginas/index.html', context)
@@ -217,11 +220,12 @@ def cadastro(request):
                     'email': email
                 }
             )
-            from django.urls import reverse
-
-            url_destino = reverse('home') + f'?cpf_novo={cpf}'
-            #podemos pedir uma mensagem de sucesso aqui dps
-            return redirect(url_destino)
+            
+            # Salva o CPF na sessão do navegador de forma segura
+            request.session['cpf_novo'] = cpf
+            
+            messages.success(request, "Cliente cadastrado com sucesso!")
+            return redirect('home') 
 
         # --- Cadastro de produto ---
         elif 'nome_produto' in request.POST:
