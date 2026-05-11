@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const codigoBipado = inputScan.value.trim();
     const produtoIdSelecionado = selectProduto.value;
 
-    // 1. Lógica para quando o usuário clica no botão "Adicionar" manualmente
+    // Lógica para quando o usuário clica no botão "Adicionar" manualmente
     // mas não selecionou nada no menu, apenas digitou/bipou o código.
     if (!produtoIdSelecionado && codigoBipado !== "") {
         fetch(`/buscar-produto-codigo/?barcode=${codigoBipado}`)
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return; // Interrompe a execução para aguardar a resposta ou a escolha na modal
     }
 
-    // 2. Lógica Original de Inserção (Executa quando já temos um ID selecionado)
+    // Lógica Original de Inserção (Executa quando já temos um ID selecionado)
     if (!selectProduto || !inputPreco) return;
 
     const produtoId = selectProduto.value;
