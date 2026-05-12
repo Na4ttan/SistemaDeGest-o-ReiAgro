@@ -1,49 +1,59 @@
-# Sistema de gestão Rei Agro
-Como o foco é CRUD, Framework Web, Banco de Dados e Controle de Versão, aqui está uma proposta estruturada e profissional para o repositório da Rei Agro:
+# 🐾 Sistema de Gestão Rei Agro
 
-Projeto Integrador I - Sistema de Gerenciamento Rei Agro
-Este repositório contém o software desenvolvido para o Projeto Integrador I do curso de Bacharelado em Tecnologia da Informação da UNIVESP. O sistema foi concebido para atender às necessidades da Rei Agro, uma pet shop e loja de produtos agropecuários, focando na organização de dados e automação de processos básicos.
+**Projeto Integrador I - Bacharelado em Tecnologia da Informação (UNIVESP)**
 
-🎯 Objetivo do Projeto
-O objetivo principal é aplicar conceitos de desenvolvimento web para criar uma ferramenta que permita o gerenciamento completo (CRUD) de itens essenciais ao negócio, como produtos, clientes ou agendamentos, garantindo a integridade dos dados e a facilidade de uso.
+O **Rei Agro** é um ecossistema de gerenciamento desenvolvido especificamente para o setor de pet shop e produtos agropecuários. O sistema vai além do CRUD tradicional, incorporando inteligência de estoque, controle rigoroso de sanidade de produtos e automação de comunicação com o cliente.
 
-🚀 Requisitos e Funcionalidades
-Seguindo as diretrizes da disciplina, o projeto implementa um CRUD (Create, Read, Update, Delete) que permite:
+## 🚀 Diferenciais do Projeto
 
-Cadastro: Inclusão de novos registros no banco de dados.
+Diferente de sistemas genéricos, esta aplicação foca na **prevenção de perdas** e na **agilidade do PDV**:
 
-Consulta: Visualização e listagem dos dados armazenados.
+* **Gestão de Validade Inteligente:** Monitoramento automático de produtos vencidos ou próximos ao vencimento, com alertas visuais no dashboard.
+* **Controle de Estoque Crítico:** Notificação de itens com baixo volume em estoque para otimização de compras.
+* **Descarte Sustentável:** Funcionalidade para exclusão lógica e registro de produtos vencidos descartados pela loja.
+* **Desmembramento de Produtos:** Permite a conversão de itens de atacado para varejo (fracionamento).
+* **PDV com Recibo Digital:** Finalização de venda com envio automático de recibo em HTML via e-mail (SMTP), reduzindo o uso de papel.
 
-Edição: Atualização de informações existentes.
+## 🛠️ Tecnologias Utilizadas
 
-Exclusão: Remoção de registros de forma segura.
+* **Linguagem:** Python 3.13
+* **Framework Web:** Django 6.x
+* **Banco de Dados:** SQLite (Desenvolvimento)
+* **Segurança:** Variáveis de ambiente (`python-dotenv`) para proteção de credenciais.
+* **Frontend:** HTML5, CSS3, JavaScript (ES6) e Bootstrap 5.
+* **Ferramentas:** Git, GitHub, e leitor de código de barras via câmera (HTML5-QR Code).
 
-🛠️ Tecnologias Utilizadas
-Para cumprir os requisitos de framework web e persistência de dados, utilizamos:
+## 📊 Estrutura de Dados (Modelagem)
 
-Linguagem: Python
+A arquitetura do banco de dados foi projetada para garantir integridade referencial e histórico de transações:
 
-Framework Web: Flask (ou Django, conforme sua implementação)
+* **Categoria & Fornecedor:** Estruturas de classificação e rastreabilidade de origem.
+* **Produto:** Armazena dados críticos como preço de venda, unidade de medida (un/kg), data de validade e saldo em estoque.
+* **Cliente:** Cadastro com identificação por CPF e canal de comunicação (e-mail) para envio de recibos.
+* **Venda & ItensVenda:** Registro de transações financeiras, desdobrando múltiplos produtos em uma única venda e atualizando o estoque em tempo real.
 
-Banco de Dados: SQLite (persistência de dados local)
+## ⚙️ Funcionalidades Principais
 
-Controle de Versão: Git e GitHub
+1. **Dashboard de Alertas:** Listagem prioritária de produtos que exigem atenção (vencimento e estoque).
+2. **Frente de Caixa (PDV):** Interface rápida com busca por código de barras, cálculo de troco e envio de e-mail.
+3. **Gestão de Descarte:** Módulo para remoção de produtos impróprios para consumo, mantendo a conformidade do inventário.
+4. **Operações de Fracionamento:** Lógica para desmembrar produtos e ajustar quantidades de acordo com a unidade de medida.
 
-Frontend: HTML5, CSS3 e Jinja2 (template engine)
+---
 
-📂 Estrutura do Banco de Dados
-Para atender aos requisitos de persistência e organização de dados, o sistema utiliza um banco de dados relacional com as seguintes tabelas principais, garantindo a integridade referencial do sistema da Rei Agro:
+### 🔧 Como rodar o projeto
 
-Categoria: Organização dos produtos (ex: rações, medicamentos, acessórios).
+1. Clone o repositório.
+2. Crie e ative seu ambiente virtual (`venv`).
+3. Instale as dependências: `pip install -r requirements.txt`.
+4. Crie o arquivo `.env` com suas credenciais de e-mail conforme o `settings.py`.
+5. Execute as migrações: `python manage.py migrate`.
+6. Inicie o servidor: `python manage.py runserver`.
 
-Fornecedor: Cadastro das empresas parceiras que fornecem os insumos.
+---
 
-Produto: Gestão do estoque com vínculo à categoria e ao fornecedor.
+🌐 Acesso Online (Deploy)
+O sistema está hospedado e pode ser acessado pelo link abaixo:
+👉 https://na4ttan.pythonanywhere.com/
 
-Cliente: Cadastro completo para controle de atendimento e histórico.
-
-Venda: Registro das transações realizadas na loja.
-
-Itens_venda: Tabela de relacionamento que detalha cada produto inserido em uma venda específica.
-
-O sistema permite a gestão completa (CRUD) de todas as entidades mencionadas, assegurando que o usuário possa cadastrar, visualizar, atualizar e remover registros conforme a necessidade do negócio
+Como você mencionou o **desmembramento** e a **exclusão de vencidos**, essa estrutura mostra para os professores da UNIVESP que você pensou em um problema real do comércio (perder produtos por data e precisar vender fracionado). Ficou muito bom!
