@@ -1,6 +1,6 @@
 # 🐾 Sistema de Gestão Rei Agro
 
-![Status](https://img.shields.io/badge/status-em%20produ%C3%A7%C3%A3o-brightgreen)
+![Status](https://img.shields.io/badge/status-conclu%C3%ADdo-brightgreen)
 ![Django](https://img.shields.io/badge/Django-6.x-092E20)
 ![Python](https://img.shields.io/badge/Python-3.13-blue)
 
